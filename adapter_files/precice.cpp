@@ -390,137 +390,177 @@ double Precice::advance(double computedTimestepLength) {
     if (verbosityLevel_high) {
       cout << "Process #" << solverProcessIndex << "/" << solverProcessSize - 1 << ": Advancing preCICE..." << endl;
     }
+	
+	double factor = 0;
+	
+	if (readDataType != ReadDataType::Temperature) {
+		// Get physical simulation information
+		bool incompressible = (config_container[ZONE_0]->GetKind_Regime() == ENUM_REGIME::INCOMPRESSIBLE);
+		bool viscous_flow = ((config_container[ZONE_0]->GetKind_Solver() == MAIN_SOLVER::NAVIER_STOKES) ||
+							 (config_container[ZONE_0]->GetKind_Solver() == MAIN_SOLVER::RANS));
 
-    // Get physical simulation information
-    bool incompressible = (config_container[ZONE_0]->GetKind_Regime() == ENUM_REGIME::INCOMPRESSIBLE);
-    bool viscous_flow = ((config_container[ZONE_0]->GetKind_Solver() == MAIN_SOLVER::NAVIER_STOKES) ||
-                         (config_container[ZONE_0]->GetKind_Solver() == MAIN_SOLVER::RANS));
-
-    // Compute factorForces for redimensionalizing forces ("ND" = Non-Dimensional)
-    double* Velocity_Real = config_container[ZONE_0]->GetVelocity_FreeStream();
-    double Density_Real = config_container[ZONE_0]->GetDensity_FreeStream();
-    double* Velocity_ND = config_container[ZONE_0]->GetVelocity_FreeStreamND();
-    double Density_ND = config_container[ZONE_0]->GetDensity_FreeStreamND();
-    double Velocity2_Real = 0.0; /*--- denotes squared real velocity ---*/
-    double Velocity2_ND = 0.0;   /*--- denotes squared non-dimensional velocity ---*/
-    // Compute squared values
-    for (int iDim = 0; iDim < nDim; iDim++) {
-      Velocity2_Real += Velocity_Real[iDim] * Velocity_Real[iDim];
-      Velocity2_ND += Velocity_ND[iDim] * Velocity_ND[iDim];
-    }
-    // Compute factor for redimensionalizing forces
-    double factorForces = Density_Real * Velocity2_Real / (Density_ND * Velocity2_ND);
-    if (verbosityLevel_high) {
-      cout << "Process #" << solverProcessIndex << "/" << solverProcessSize - 1
-           << ": Factor for (non-/re-)dimensionalization of forces: " << factorForces
-           << endl; /*--- for debugging purposes ---*/
-    }
+		// Compute factorForces for redimensionalizing forces ("ND" = Non-Dimensional)
+		double* Velocity_Real = config_container[ZONE_0]->GetVelocity_FreeStream();
+		double Density_Real = config_container[ZONE_0]->GetDensity_FreeStream();
+		double* Velocity_ND = config_container[ZONE_0]->GetVelocity_FreeStreamND();
+		double Density_ND = config_container[ZONE_0]->GetDensity_FreeStreamND();
+		double Velocity2_Real = 0.0; /*--- denotes squared real velocity ---*/
+		double Velocity2_ND = 0.0;   /*--- denotes squared non-dimensional velocity ---*/
+		// Compute squared values
+		for (int iDim = 0; iDim < nDim; iDim++) {
+		  Velocity2_Real += Velocity_Real[iDim] * Velocity_Real[iDim];
+		  Velocity2_ND += Velocity_ND[iDim] * Velocity_ND[iDim];
+		}
+		// Compute factor for redimensionalizing forces
+		factor = Density_Real * Velocity2_Real / (Density_ND * Velocity2_ND);
+		
+		if (verbosityLevel_high) {
+			cout << "Process #" << solverProcessIndex << "/" << solverProcessSize - 1
+				<< ": Factor for (non-/re-)dimensionalization of forces: " << factor
+				<< endl; /*--- for debugging purposes ---*/
+		}
+    } else { // Else doing CHT - get factor for redimensionalizing heat flux
+		
+		factor = config_container[ZONE_0]->GetHeat_Flux_Ref()
+		if (verbosityLevel_high) {
+			cout << "Process #" << solverProcessIndex << "/" << solverProcessSize - 1
+				<< ": Factor for (non-/re-)dimensionalization of heat fluxes: " << factor
+				<< endl; /*--- for debugging purposes ---*/
+		}
+	}
+	
 
     for (int i = 0; i < localNumberWetSurfaces; i++) {
-      if (verbosityLevel_high) {
-        // 1. Compute forces
-        cout << "Process #" << solverProcessIndex << "/" << solverProcessSize - 1
-             << ": Advancing preCICE: Computing forces for "
-             << config_container[ZONE_0]->GetpreCICE_WetSurfaceMarkerName() << indexMarkerWetMappingLocalToGlobal[i]
-             << "..." << endl;
-      }
-      // Some variables to be used:
-      unsigned long nodeVertex[vertexSize[i]];
-      double normalsVertex[vertexSize[i]][nDim];
-      double normalsVertex_Unit[vertexSize[i]][nDim];
-      double Area;
-      double Pn = 0.0;   /*--- denotes pressure at a node ---*/
-      double Pinf = 0.0; /*--- denotes environmental (farfield) pressure ---*/
-	  //double** Grad_PrimVar =
-	  CMatrixView<double> Grad_PrimVar =
-          NULL; /*--- denotes (u.A. velocity) gradients needed for computation of viscous forces ---*/
-      double Viscosity = 0.0;
-      double Tau[3][3];
-      double TauElem[3];
-      double forces_su2[vertexSize[i]][nDim]; /*--- forces will be stored such, before converting to simple array ---*/
+	  if (readDataType != ReadDataType::Temperature) {
+		  if (verbosityLevel_high) {
+			// 1. Compute forces
+			cout << "Process #" << solverProcessIndex << "/" << solverProcessSize - 1
+				 << ": Advancing preCICE: Computing forces for "
+				 << config_container[ZONE_0]->GetpreCICE_WetSurfaceMarkerName() << indexMarkerWetMappingLocalToGlobal[i]
+				 << "..." << endl;
+		  }
+		  // Some variables to be used:
+		  unsigned long nodeVertex[vertexSize[i]];
+		  double normalsVertex[vertexSize[i]][nDim];
+		  double normalsVertex_Unit[vertexSize[i]][nDim];
+		  double Area;
+		  double Pn = 0.0;   /*--- denotes pressure at a node ---*/
+		  double Pinf = 0.0; /*--- denotes environmental (farfield) pressure ---*/
+		  //double** Grad_PrimVar =
+		  CMatrixView<double> Grad_PrimVar =
+			  NULL; /*--- denotes (u.A. velocity) gradients needed for computation of viscous forces ---*/
+		  double Viscosity = 0.0;
+		  double Tau[3][3];
+		  double TauElem[3];
+		  double forces_su2[vertexSize[i]][nDim]; /*--- forces will be stored such, before converting to simple array ---*/
 
-      /*--- Loop over vertices of coupled boundary ---*/
-      for (int iVertex = 0; iVertex < vertexSize[i]; iVertex++) {
-        // Get node number (= index) to vertex (= node)
-        nodeVertex[iVertex] = geometry_container[ZONE_0][INST_0][MESH_0]
-                                  ->vertex[valueMarkerWet[i]][iVertex]
-                                  ->GetNode(); /*--- Store all nodes (indices) in a vector ---*/
-        // Get normal vector
-        for (int iDim = 0; iDim < nDim; iDim++) {
-          normalsVertex[iVertex][iDim] =
-              (geometry_container[ZONE_0][INST_0][MESH_0]->vertex[valueMarkerWet[i]][iVertex]->GetNormal())[iDim];
-        }
-        // Unit normals
-        Area = 0.0;
-        for (int iDim = 0; iDim < nDim; iDim++) {
-          Area += normalsVertex[iVertex][iDim] * normalsVertex[iVertex][iDim];
-        }
-        Area = sqrt(Area);
-        for (int iDim = 0; iDim < nDim; iDim++) {
-          normalsVertex_Unit[iVertex][iDim] = normalsVertex[iVertex][iDim] / Area;
-        }
-        // Get the values of pressure and viscosity
-        Pn = solver_container[ZONE_0][INST_0][MESH_0][FLOW_SOL]->GetNodes()->GetPressure(nodeVertex[iVertex]);
-        Pinf = solver_container[ZONE_0][INST_0][MESH_0][FLOW_SOL]->GetPressure_Inf();
-        if (viscous_flow) {
-          Grad_PrimVar = solver_container[ZONE_0][INST_0][MESH_0][FLOW_SOL]->GetNodes()->GetGradient_Primitive()[nodeVertex[iVertex]];
-          Viscosity = solver_container[ZONE_0][INST_0][MESH_0][FLOW_SOL]->GetNodes()->GetLaminarViscosity(nodeVertex[iVertex]);
-        }
+		  /*--- Loop over vertices of coupled boundary ---*/
+		  for (int iVertex = 0; iVertex < vertexSize[i]; iVertex++) {
+			// Get node number (= index) to vertex (= node)
+			nodeVertex[iVertex] = geometry_container[ZONE_0][INST_0][MESH_0]
+									  ->vertex[valueMarkerWet[i]][iVertex]
+									  ->GetNode(); /*--- Store all nodes (indices) in a vector ---*/
+			// Get normal vector
+			for (int iDim = 0; iDim < nDim; iDim++) {
+			  normalsVertex[iVertex][iDim] =
+				  (geometry_container[ZONE_0][INST_0][MESH_0]->vertex[valueMarkerWet[i]][iVertex]->GetNormal())[iDim];
+			}
+			// Unit normals
+			Area = 0.0;
+			for (int iDim = 0; iDim < nDim; iDim++) {
+			  Area += normalsVertex[iVertex][iDim] * normalsVertex[iVertex][iDim];
+			}
+			Area = sqrt(Area);
+			for (int iDim = 0; iDim < nDim; iDim++) {
+			  normalsVertex_Unit[iVertex][iDim] = normalsVertex[iVertex][iDim] / Area;
+			}
+			// Get the values of pressure and viscosity
+			Pn = solver_container[ZONE_0][INST_0][MESH_0][FLOW_SOL]->GetNodes()->GetPressure(nodeVertex[iVertex]);
+			Pinf = solver_container[ZONE_0][INST_0][MESH_0][FLOW_SOL]->GetPressure_Inf();
+			if (viscous_flow) {
+			  Grad_PrimVar = solver_container[ZONE_0][INST_0][MESH_0][FLOW_SOL]->GetNodes()->GetGradient_Primitive()[nodeVertex[iVertex]];
+			  Viscosity = solver_container[ZONE_0][INST_0][MESH_0][FLOW_SOL]->GetNodes()->GetLaminarViscosity(nodeVertex[iVertex]);
+			}
 
-        // Calculate the forces_su2 in the nodes for the inviscid term --> Units of force (non-dimensional).
-        for (int iDim = 0; iDim < nDim; iDim++) {
-          forces_su2[iVertex][iDim] = -(Pn - Pinf) * normalsVertex[iVertex][iDim];
-        }
-        // Calculate the forces_su2 in the nodes for the viscous term
-        if (viscous_flow) {
-          // Divergence of the velocity
-          double div_vel = 0.0;
-          for (int iDim = 0; iDim < nDim; iDim++) {
-            div_vel += Grad_PrimVar[iDim + 1][iDim];
-          }
-          if (incompressible) {
-            div_vel = 0.0; /*--- incompressible flow is divergence-free ---*/
-          }
-          for (int iDim = 0; iDim < nDim; iDim++) {
-            for (int jDim = 0; jDim < nDim; jDim++) {
-              // Dirac delta
-              double Delta = 0.0;
-              if (iDim == jDim) {
-                Delta = 1.0;
-              }
-              // Viscous stress
-              Tau[iDim][jDim] = Viscosity * (Grad_PrimVar[jDim + 1][iDim] + Grad_PrimVar[iDim + 1][jDim]) -
-                                2 / 3 * Viscosity * div_vel * Delta;
-              // Add Viscous component in the forces_su2 vector --> Units of force (non-dimensional).
-              forces_su2[iVertex][iDim] += Tau[iDim][jDim] * normalsVertex[iVertex][jDim];
-            }
-          }
-        }
-        // Rescale forces_su2 to SI units
-        for (int iDim = 0; iDim < nDim; iDim++) {
-          forces_su2[iVertex][iDim] = forces_su2[iVertex][iDim] * factorForces;
-        }
-      }
-      // convert forces_su2 into forces
-      forces = new double[vertexSize[i] * nDim];
-      for (int iVertex = 0; iVertex < vertexSize[i]; iVertex++) {
-        for (int iDim = 0; iDim < nDim; iDim++) {
-          // Do not write forces for duplicate nodes! -> Check wether the color of the node matches the MPI-rank of this
-          // process. Only write forces, if node originally belongs to this process.
-          if (geometry_container[ZONE_0][INST_0][MESH_0]->nodes->GetColor(nodeVertex[iVertex]) == solverProcessIndex) {
-            forces[iVertex * nDim + iDim] = forces_su2[iVertex][iDim];
-          } else {
-            forces[iVertex * nDim + iDim] = 0;
-          }
-        }
-      }
-      if (verbosityLevel_high) {
-        cout << "Process #" << solverProcessIndex << "/" << solverProcessSize - 1
-             << ": Advancing preCICE: ...done computing forces for "
-             << config_container[ZONE_0]->GetpreCICE_WetSurfaceMarkerName() << indexMarkerWetMappingLocalToGlobal[i]
-             << endl;
+			// Calculate the forces_su2 in the nodes for the inviscid term --> Units of force (non-dimensional).
+			for (int iDim = 0; iDim < nDim; iDim++) {
+			  forces_su2[iVertex][iDim] = -(Pn - Pinf) * normalsVertex[iVertex][iDim];
+			}
+			// Calculate the forces_su2 in the nodes for the viscous term
+			if (viscous_flow) {
+			  // Divergence of the velocity
+			  double div_vel = 0.0;
+			  for (int iDim = 0; iDim < nDim; iDim++) {
+				div_vel += Grad_PrimVar[iDim + 1][iDim];
+			  }
+			  if (incompressible) {
+				div_vel = 0.0; /*--- incompressible flow is divergence-free ---*/
+			  }
+			  for (int iDim = 0; iDim < nDim; iDim++) {
+				for (int jDim = 0; jDim < nDim; jDim++) {
+				  // Dirac delta
+				  double Delta = 0.0;
+				  if (iDim == jDim) {
+					Delta = 1.0;
+				  }
+				  // Viscous stress
+				  Tau[iDim][jDim] = Viscosity * (Grad_PrimVar[jDim + 1][iDim] + Grad_PrimVar[iDim + 1][jDim]) -
+									2 / 3 * Viscosity * div_vel * Delta;
+				  // Add Viscous component in the forces_su2 vector --> Units of force (non-dimensional).
+				  forces_su2[iVertex][iDim] += Tau[iDim][jDim] * normalsVertex[iVertex][jDim];
+				}
+			  }
+			}
+			// Rescale forces_su2 to SI units
+			for (int iDim = 0; iDim < nDim; iDim++) {
+			  forces_su2[iVertex][iDim] = forces_su2[iVertex][iDim] * factorForces;
+			}
+		  }
+		  // convert forces_su2 into forces
+		  forces = new double[vertexSize[i] * nDim];
+		  for (int iVertex = 0; iVertex < vertexSize[i]; iVertex++) {
+			for (int iDim = 0; iDim < nDim; iDim++) {
+			  // Do not write forces for duplicate nodes! -> Check wether the color of the node matches the MPI-rank of this
+			  // process. Only write forces, if node originally belongs to this process.
+			  if (geometry_container[ZONE_0][INST_0][MESH_0]->nodes->GetColor(nodeVertex[iVertex]) == solverProcessIndex) {
+				forces[iVertex * nDim + iDim] = forces_su2[iVertex][iDim];
+			  } else {
+				forces[iVertex * nDim + iDim] = 0;
+			  }
+			}
+		  }
+		  
+		  if (verbosityLevel_high) {
+			cout << "Process #" << solverProcessIndex << "/" << solverProcessSize - 1
+				 << ": Advancing preCICE: ...done computing forces for "
+				 << config_container[ZONE_0]->GetpreCICE_WetSurfaceMarkerName() << indexMarkerWetMappingLocalToGlobal[i]
+				 << endl;
+		  }
+	  } else { // Else we are doing CHT!
+		  if (verbosityLevel_high) {
+			// 1. Compute heat fluxes
+			cout << "Process #" << solverProcessIndex << "/" << solverProcessSize - 1
+				 << ": Advancing preCICE: Computing heat fluxes for "
+				 << config_container[ZONE_0]->GetpreCICE_WetSurfaceMarkerName() << indexMarkerWetMappingLocalToGlobal[i]
+				 << "..." << endl;
+		  }
+		  
+		  
+		  
+		  
+		  
+		  
+		  
+		  
+		  
+		  if (verbosityLevel_high) {
+			cout << "Process #" << solverProcessIndex << "/" << solverProcessSize - 1
+				 << ": Advancing preCICE: ...done computing heat fluxes for "
+				 << config_container[ZONE_0]->GetpreCICE_WetSurfaceMarkerName() << indexMarkerWetMappingLocalToGlobal[i]
+				 << endl;
       }
 
+	  }
       // 2. Write forces
       if (verbosityLevel_high) {
         cout << "Process #" << solverProcessIndex << "/" << solverProcessSize - 1
