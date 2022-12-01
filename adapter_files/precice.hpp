@@ -22,6 +22,7 @@ class Precice {
   enum class ReadDataType : unsigned {
     Displacement,                // Read absolute displacements
     DisplacementDelta = 1 << 0,  // Read incremental displacement
+	Temperature = 1 << 1,		 // Read absolute temperature
   };
 
   // MPI-rank(=index) and size
@@ -43,10 +44,14 @@ class Precice {
   short* valueMarkerWet;      // List of wet surface marker values
   int** vertexIDs;
   int* forceID;
+  int* heatFluxID;
   int* displDeltaID;
   double* forces;
+  double* heatFluxes;
   double* displacements;
+  double* temperatures;
   double* displacements_n;
+  double* temperatures_n;
   double* displacementDeltas;
   const string& coric;
   const string& cowic;
@@ -64,6 +69,8 @@ class Precice {
   unsigned long nPoint;  // Overall number of nodes of the problem
   int nVar;    // Number of variables of the problem
   double **Coord_Saved, **Coord_n_Saved, **Coord_n1_Saved, **Coord_p1_Saved, **GridVel_Saved, ***GridVel_Grad_Saved;
+  //TODO: implicit coupling for CHT
+  
   double dt_savedState;
   bool StopCalc_savedState;
   double **solution_Saved, **solution_time_n_Saved, **solution_time_n1_Saved;

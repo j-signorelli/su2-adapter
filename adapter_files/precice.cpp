@@ -22,10 +22,14 @@ Precice::Precice(const string& preciceConfigurationFileName, const std::string& 
       grid_movement(grid_movement),
       vertexIDs(NULL),
       forceID(NULL),
+	  heatFluxID(NULL),
       displDeltaID(NULL),
       forces(NULL),
+	  heatFluxes(NULL),
       displacements(NULL),
+	  temperatures(NULL),
       displacements_n(NULL),
+	  temperatures_n(NULL),
       displacementDeltas(NULL),
       // For implicit coupling
       coric(precice::constants::actionReadIterationCheckpoint()),
@@ -58,8 +62,10 @@ Precice::Precice(const string& preciceConfigurationFileName, const std::string& 
       solution_time_n1_Saved(NULL) {
   if (preciceReadDataName.find("Delta") == std::string::npos)
     readDataType = ReadDataType::Displacement;
-  else
+  else if (preciceReadDataName.find("Temperature") == std::string::npos)
     readDataType = ReadDataType::DisplacementDelta;
+  else
+	readDataType = ReadDataType::Temperature;
 
   Coord_Saved = new double*[nPoint];
   Coord_n_Saved = new double*[nPoint];
@@ -97,6 +103,9 @@ Precice::~Precice(void) {
   }
   if (forceID != NULL) {
     delete[] forceID;
+  }
+  if (heatFluxID != NULL) {
+	delete[] heatFluxID;
   }
   if (displDeltaID != NULL) {
     delete[] displDeltaID;
@@ -174,6 +183,9 @@ Precice::~Precice(void) {
   }
   if (displacements_n != NULL) {
     delete[] displacements_n;
+  }
+  if (temperatures_n != NULL) {
+	delete[] temperatures_n;
   }
 }
 
