@@ -46,6 +46,7 @@ class Precice {
   int* forceID;
   int* heatFluxID;
   int* displDeltaID;
+  int* tempID;
   double* forces;
   double* heatFluxes;
   double* displacements;
