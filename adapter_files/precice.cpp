@@ -550,7 +550,7 @@ double Precice::advance(double computedTimestepLength) {
 									  ->GetNode(); /*--- Store all nodes (indices) in a vector ---*/
 									  
 			if (geometry_container[ZONE_0][INST_0][MESH_0]->nodes->GetColor(nodeVertex[iVertex]) == solverProcessIndex) {
-				heatFluxes[iVertex] = factor * solver_container[ZONE_0][INST_0][MESH_0][FLOW_SOL]->GetHeatFlux(valueMarkerWet[i],nodeVertex[iVertex])
+				heatFluxes[iVertex] = factor * solver_container[ZONE_0][INST_0][MESH_0][FLOW_SOL]->GetHeatFlux(valueMarkerWet[i],iVertex)
 		  
 			  } else {
 				heatFluxes[iVertex] = 0;
@@ -666,7 +666,7 @@ double Precice::advance(double computedTimestepLength) {
              << config_container[ZONE_0]->GetpreCICE_WetSurfaceMarkerName() << indexMarkerWetMappingLocalToGlobal[i]
              << "..." << endl;
       }
-      // convert displacementDeltas into displacementDeltas_su2
+      // convert displacementDeltas into displacementDeltas_su2 -- unnecessary step for temperatures
       switch (readDataType) {
         case ReadDataType::DisplacementDelta: {
           // convert displacementDeltas into displacementDeltas_su2
@@ -700,15 +700,27 @@ double Precice::advance(double computedTimestepLength) {
       if (displacements != NULL) {
         delete[] displacements;
       }
-
-      // Set change of coordinates (i.e. displacementDeltas)
+	  // temperatures not yet de-allocated as the values in the array itself are used
+	  
+	  
+      // Set change of coordinates (i.e. displacementDeltas) OR set temperatures
       for (int iVertex = 0; iVertex < vertexSize[i]; iVertex++) {
-        geometry_container[ZONE_0][INST_0][MESH_0]->vertex[valueMarkerWet[i]][iVertex]->SetVarCoord(
-            displacementDeltas_su2[iVertex]);
+		if (readDataType != ReadDataType::Temperature) {
+			geometry_container[ZONE_0][INST_0][MESH_0]->vertex[valueMarkerWet[i]][iVertex]->SetVarCoord(
+				displacementDeltas_su2[iVertex]);
+		} else { // Else we are doing CHT
+			geometry_container[ZONE_0][INST_0][MESH_0]->SetCustomBoundaryTemperature(valueMarkerWet[i], iVertex, temperatures[iVertex]); 
+		}
       }
+	  
+	  //Now de-allocate temperatures
+	  if (temperatures != NULL) {
+		  delete[] temperatures;
+	  }
+	  
       if (verbosityLevel_high) {
         cout << "Process #" << solverProcessIndex << "/" << solverProcessSize - 1
-             << ": Advancing preCICE: ...done setting displacement deltas for "
+             << ": Advancing preCICE: ...done setting " << readDataString <<"s for "
              << config_container[ZONE_0]->GetpreCICE_WetSurfaceMarkerName() << indexMarkerWetMappingLocalToGlobal[i]
              << "." << endl;
       }
