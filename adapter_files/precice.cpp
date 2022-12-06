@@ -399,7 +399,7 @@ double Precice::advance(double computedTimestepLength) {
 		bool viscous_flow = ((config_container[ZONE_0]->GetKind_Solver() == MAIN_SOLVER::NAVIER_STOKES) ||
 							 (config_container[ZONE_0]->GetKind_Solver() == MAIN_SOLVER::RANS));
 
-		// Compute factorForces for redimensionalizing forces ("ND" = Non-Dimensional)
+		// Compute factor for redimensionalizing forces ("ND" = Non-Dimensional)
 		double* Velocity_Real = config_container[ZONE_0]->GetVelocity_FreeStream();
 		double Density_Real = config_container[ZONE_0]->GetDensity_FreeStream();
 		double* Velocity_ND = config_container[ZONE_0]->GetVelocity_FreeStreamND();
@@ -431,6 +431,10 @@ double Precice::advance(double computedTimestepLength) {
 	
 
     for (int i = 0; i < localNumberWetSurfaces; i++) {
+		
+	  unsigned long nodeVertex[vertexSize[i]];
+		
+	  // This entire section can probably be rewritten with much simpler code as per SU2v7.4.0
 	  if (readDataType != ReadDataType::Temperature) {
 		  if (verbosityLevel_high) {
 			// 1. Compute forces
@@ -513,7 +517,7 @@ double Precice::advance(double computedTimestepLength) {
 			}
 			// Rescale forces_su2 to SI units
 			for (int iDim = 0; iDim < nDim; iDim++) {
-			  forces_su2[iVertex][iDim] = forces_su2[iVertex][iDim] * factorForces;
+			  forces_su2[iVertex][iDim] = forces_su2[iVertex][iDim] * factor;
 			}
 		  }
 		  // convert forces_su2 into forces
@@ -538,70 +542,88 @@ double Precice::advance(double computedTimestepLength) {
 		  }
 	  } else { // Else we are doing CHT!
 		  if (verbosityLevel_high) {
-			// 1. Compute heat fluxes
+			// 1. Retrieve heat fluxes
 			cout << "Process #" << solverProcessIndex << "/" << solverProcessSize - 1
-				 << ": Advancing preCICE: Computing heat fluxes for "
+				 << ": Advancing preCICE: Retrieving heat fluxes for "
 				 << config_container[ZONE_0]->GetpreCICE_WetSurfaceMarkerName() << indexMarkerWetMappingLocalToGlobal[i]
 				 << "..." << endl;
 		  }
 		  
 		  
+
+		  // Get heat flux from solver container
+		  // As from CFlowOutput::LoadSurfaceData, ensure correct retrieval of HeatFlux
+		  const auto heat_sol = (config_container[ZONE_0]->GetKind_Regime() == ENUM_REGIME::INCOMPRESSIBLE) &&
+                         config_container[ZONE_0]->GetWeakly_Coupled_Heat() ? HEAT_SOL : FLOW_SOL;
 		  
 		  
+		  heatFluxes = new double[vertexSize[i]]; // Only one wall normal heat flux value to be sent!
 		  
 		  
+		  /*--- Loop over vertices of coupled boundary ---*/
+		  for (int iVertex = 0; iVertex < vertexSize[i]; iVertex++) {
+			// Get node number (= index) to vertex (= node)
+			nodeVertex[iVertex] = geometry_container[ZONE_0][INST_0][MESH_0]
+									  ->vertex[valueMarkerWet[i]][iVertex]
+									  ->GetNode(); /*--- Store all nodes (indices) in a vector ---*/
+									  
+			if (geometry_container[ZONE_0][INST_0][MESH_0]->nodes->GetColor(nodeVertex[iVertex]) == solverProcessIndex) {
+				heatFluxes[iVertex] = factor * solver_container[ZONE_0][INST_0][MESH_0][FLOW_SOL]->GetHeatFlux(valueMarkerWet[i],nodeVertex[iVertex])
 		  
-		  
-		  
-		  if (verbosityLevel_high) {
+			  } else {
+				heatFluxes[iVertex] = 0;
+			  }
+		   }
+		   if (verbosityLevel_high) {
 			cout << "Process #" << solverProcessIndex << "/" << solverProcessSize - 1
-				 << ": Advancing preCICE: ...done computing heat fluxes for "
+				 << ": Advancing preCICE: ...done retrieving heat fluxes for "
 				 << config_container[ZONE_0]->GetpreCICE_WetSurfaceMarkerName() << indexMarkerWetMappingLocalToGlobal[i]
 				 << endl;
+	       }
+	  }
+	  
+      // 2. Write forces/heat fluxes
+      if (verbosityLevel_high) {
+		if (readDataType != ReadDataType::Temperature) {
+			cout << "Process #" << solverProcessIndex << "/" << solverProcessSize - 1
+				 << ": Advancing preCICE: Writing forces for "
+				 << config_container[ZONE_0]->GetpreCICE_WetSurfaceMarkerName() << indexMarkerWetMappingLocalToGlobal[i]
+				 << "..." << endl;
+		} else {
+			cout << "Process #" << solverProcessIndex << "/" << solverProcessSize - 1
+				 << ": Advancing preCICE: Writing heat fluxes for "
+				 << config_container[ZONE_0]->GetpreCICE_WetSurfaceMarkerName() << indexMarkerWetMappingLocalToGlobal[i]
+				 << "..." << endl;
+		}
       }
 
+	  if (readDataType != ReadDataType::Temperature) {
+		  solverInterface.writeBlockVectorData(forceID[indexMarkerWetMappingLocalToGlobal[i]], vertexSize[i], vertexIDs[i],
+											   forces);
+	  } else {
+		  solverInterface.writeBlockVectorData(heatFluxID[indexMarkerWetMappingLocalToGlobal[i]], vertexSize[i], vertexIDs[i],
+											   heatFluxes);
+
+      }	  
+	
+      if (verbosityLevel_high) {
+		if (readDataType != ReadDataType::Temperature) {
+			cout << "Process #" << solverProcessIndex << "/" << solverProcessSize - 1
+				 << ": Advancing preCICE: ...done writing forces for "
+				 << config_container[ZONE_0]->GetpreCICE_WetSurfaceMarkerName() << indexMarkerWetMappingLocalToGlobal[i]
+				 << "." << endl;
+		} else {
+			cout << "Process #" << solverProcessIndex << "/" << solverProcessSize - 1
+				 << ": Advancing preCICE: ...done writing heat fluxes for "
+				 << config_container[ZONE_0]->GetpreCICE_WetSurfaceMarkerName() << indexMarkerWetMappingLocalToGlobal[i]
+				 << "." << endl;
+	    }
 	  }
-      // 2. Write forces
-      if (verbosityLevel_high) {
-        cout << "Process #" << solverProcessIndex << "/" << solverProcessSize - 1
-             << ": Advancing preCICE: Writing forces for "
-             << config_container[ZONE_0]->GetpreCICE_WetSurfaceMarkerName() << indexMarkerWetMappingLocalToGlobal[i]
-             << "..." << endl;
-      }
-      // Load Ramping functionality: Reduce force vector before transferring by a ramping factor, which increases with
-      // the number of elapsed time steps; Achtung: ExtIter beginnt bei 0 (ohne Restart) und bei einem Restart
-      // (Startlösung) nicht bei 0, sondern bei der Startiterationsnummer
-	  
-	  /* Temporarily commenting out - TODO
-      if (config_container[ZONE_0]->GetpreCICE_LoadRamping() &&
-          ((config_container[ZONE_0]->GetExtIter() - config_container[ZONE_0]->GetUnst_RestartIter()) <
-           config_container[ZONE_0]->GetpreCICE_LoadRampingDuration())) {
-        if (verbosityLevel_high) {
-          cout << "Process #" << solverProcessIndex << "/" << solverProcessSize - 1
-               << ": Load ramping factor in preCICE: "
-               << config_container[ZONE_0]->GetExtIter() - config_container[ZONE_0]->GetUnst_RestartIter() + 1 << "/"
-               << config_container[ZONE_0]->GetpreCICE_LoadRampingDuration() << endl;
-        }
-        *forces = *forces *
-                  ((config_container[ZONE_0]->GetExtIter() - config_container[ZONE_0]->GetUnst_RestartIter()) + 1) /
-                  config_container[ZONE_0]->GetpreCICE_LoadRampingDuration();
-      }
-	  */
-	  if (config_container[ZONE_0]->GetpreCICE_LoadRamping())
-		  cout << "Load ramping has not yet been implemented for this version of SU2" << endl;
-	  
-	  
-	  
-      solverInterface.writeBlockVectorData(forceID[indexMarkerWetMappingLocalToGlobal[i]], vertexSize[i], vertexIDs[i],
-                                           forces);
-      if (verbosityLevel_high) {
-        cout << "Process #" << solverProcessIndex << "/" << solverProcessSize - 1
-             << ": Advancing preCICE: ...done writing forces for "
-             << config_container[ZONE_0]->GetpreCICE_WetSurfaceMarkerName() << indexMarkerWetMappingLocalToGlobal[i]
-             << "." << endl;
-      }
       if (forces != NULL) {
         delete[] forces;
+      }
+	  if (heatFluxes != NULL) {
+        delete[] heatFluxes;
       }
     }
 
