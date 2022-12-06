@@ -770,25 +770,27 @@ void Precice::saveOldState(bool* StopCalc, double* dt) {
       solution_time_n1_Saved[iPoint][iVar] =
           (solver_container[ZONE_0][INST_0][MESH_0][FLOW_SOL]->GetNodes()->GetSolution_time_n1(iPoint, iVar));
     }
-    for (int iDim = 0; iDim < nDim; iDim++) {
-      // Save coordinates at last, current and next time step
-      Coord_Saved[iPoint][iDim] = (geometry_container[ZONE_0][INST_0][MESH_0]->nodes->GetCoord(iPoint))[iDim];
-      Coord_n_Saved[iPoint][iDim] = (geometry_container[ZONE_0][INST_0][MESH_0]->nodes->GetCoord_n(iPoint))[iDim];
-      Coord_n1_Saved[iPoint][iDim] = (geometry_container[ZONE_0][INST_0][MESH_0]->nodes->GetCoord_n1(iPoint))[iDim];
-      Coord_p1_Saved[iPoint][iDim] = (geometry_container[ZONE_0][INST_0][MESH_0]->nodes->GetCoord_p1(iPoint))[iDim];
-	  
-      // Save grid velocity - only important when using continunous adjoint
-	  // Also: SU2 does not instantiate GridVel_Grad in CPoint when not, so this check is critical
-	  if (config_container[ZONE_0]->GetContinuous_Adjoint())
-	  {
-		  GridVel_Saved[iPoint][iDim] = (geometry_container[ZONE_0][INST_0][MESH_0]->nodes->GetGridVel(iPoint))[iDim];
-		  for (int jDim = 0; jDim < nDim; jDim++) {
-			// Save grid velocity gradient
-			GridVel_Grad_Saved[iPoint][iDim][jDim] =
-				geometry_container[ZONE_0][INST_0][MESH_0]->nodes->GetGridVel_Grad(iPoint)[iDim][jDim];
+	if (readDataType != ReadDataType::Temperature) { //If not doing FSI, no need to save this stuff
+		for (int iDim = 0; iDim < nDim; iDim++) {
+		  // Save coordinates at last, current and next time step
+		  Coord_Saved[iPoint][iDim] = (geometry_container[ZONE_0][INST_0][MESH_0]->nodes->GetCoord(iPoint))[iDim];
+		  Coord_n_Saved[iPoint][iDim] = (geometry_container[ZONE_0][INST_0][MESH_0]->nodes->GetCoord_n(iPoint))[iDim];
+		  Coord_n1_Saved[iPoint][iDim] = (geometry_container[ZONE_0][INST_0][MESH_0]->nodes->GetCoord_n1(iPoint))[iDim];
+		  Coord_p1_Saved[iPoint][iDim] = (geometry_container[ZONE_0][INST_0][MESH_0]->nodes->GetCoord_p1(iPoint))[iDim];
+		  
+		  // Save grid velocity - only important when using continunous adjoint
+		  // Also: SU2 does not instantiate GridVel_Grad in CPoint when not, so this check is critical
+		  if (config_container[ZONE_0]->GetContinuous_Adjoint())
+		  {
+			  GridVel_Saved[iPoint][iDim] = (geometry_container[ZONE_0][INST_0][MESH_0]->nodes->GetGridVel(iPoint))[iDim];
+			  for (int jDim = 0; jDim < nDim; jDim++) {
+				// Save grid velocity gradient
+				GridVel_Grad_Saved[iPoint][iDim][jDim] =
+					geometry_container[ZONE_0][INST_0][MESH_0]->nodes->GetGridVel_Grad(iPoint)[iDim][jDim];
+			  }
 		  }
-	  }
-    }
+		}
+	}
   }
 
   // Save wether simulation should be stopped after the current iteration
@@ -806,26 +808,28 @@ void Precice::reloadOldState(bool* StopCalc, double* dt) {
     solver_container[ZONE_0][INST_0][MESH_0][FLOW_SOL]->GetNodes()->Set_Solution_time_n(iPoint, solution_time_n_Saved[iPoint]);
     solver_container[ZONE_0][INST_0][MESH_0][FLOW_SOL]->GetNodes()->Set_Solution_time_n1(iPoint, solution_time_n1_Saved[iPoint]);
 
-    // Reload coordinates at last, current and next time step
-	geometry_container[ZONE_0][INST_0][MESH_0]->nodes->SetCoord_n1(iPoint, Coord_n1_Saved[iPoint]);
-    geometry_container[ZONE_0][INST_0][MESH_0]->nodes->SetCoord_n(iPoint, Coord_n_Saved[iPoint]);
-    geometry_container[ZONE_0][INST_0][MESH_0]->nodes->SetCoord_p1(iPoint, Coord_p1_Saved[iPoint]);
-	geometry_container[ZONE_0][INST_0][MESH_0]->nodes->SetCoord(iPoint, Coord_Saved[iPoint]);
-	
-    // Reload grid velocity
-    geometry_container[ZONE_0][INST_0][MESH_0]->nodes->SetGridVel(iPoint, GridVel_Saved[iPoint]);
 
-	
-    // Reload grid velocity gradient if using CA
-	if (config_container[ZONE_0]->GetContinuous_Adjoint())
-	{
-		for (int iDim = 0; iDim < nDim; iDim++) {
-		  for (int jDim = 0; jDim < nDim; jDim++) {
-			geometry_container[ZONE_0][INST_0][MESH_0]->nodes->GetGridVel_Grad()[iPoint][iDim][jDim] = GridVel_Grad_Saved[iPoint][iDim][jDim];
-		  }
+	if (readDataType != ReadDataType::Temperature) { //If not doing FSI, no need to save this stuff
+		// Reload coordinates at last, current and next time step
+		geometry_container[ZONE_0][INST_0][MESH_0]->nodes->SetCoord_n1(iPoint, Coord_n1_Saved[iPoint]);
+		geometry_container[ZONE_0][INST_0][MESH_0]->nodes->SetCoord_n(iPoint, Coord_n_Saved[iPoint]);
+		geometry_container[ZONE_0][INST_0][MESH_0]->nodes->SetCoord_p1(iPoint, Coord_p1_Saved[iPoint]);
+		geometry_container[ZONE_0][INST_0][MESH_0]->nodes->SetCoord(iPoint, Coord_Saved[iPoint]);
+		
+		// Reload grid velocity
+		geometry_container[ZONE_0][INST_0][MESH_0]->nodes->SetGridVel(iPoint, GridVel_Saved[iPoint]);
+
+		
+		// Reload grid velocity gradient if using CA
+		if (config_container[ZONE_0]->GetContinuous_Adjoint())
+		{
+			for (int iDim = 0; iDim < nDim; iDim++) {
+			  for (int jDim = 0; jDim < nDim; jDim++) {
+				geometry_container[ZONE_0][INST_0][MESH_0]->nodes->GetGridVel_Grad()[iPoint][iDim][jDim] = GridVel_Grad_Saved[iPoint][iDim][jDim];
+			  }
+			}
 		}
 	}
-	
   }
 
   // Reload wether simulation should be stopped after current iteration
