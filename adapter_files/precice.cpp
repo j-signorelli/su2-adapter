@@ -30,7 +30,6 @@ Precice::Precice(const string& preciceConfigurationFileName, const std::string& 
       displacements(NULL),
 	  temperatures(NULL),
       displacements_n(NULL),
-	  temperatures_n(NULL),
       displacementDeltas(NULL),
       // For implicit coupling
       coric(precice::constants::actionReadIterationCheckpoint()),
@@ -188,9 +187,7 @@ Precice::~Precice(void) {
   if (displacements_n != NULL) {
     delete[] displacements_n;
   }
-  if (temperatures_n != NULL) {
-	delete[] temperatures_n;
-  }
+
 }
 
 double Precice::initialize() {
@@ -324,9 +321,6 @@ double Precice::initialize() {
 				  (indexMarkerWetMappingLocalToGlobal[i] == 0 ? "" : to_string(indexMarkerWetMappingLocalToGlobal[i])),
 			  meshID[indexMarkerWetMappingLocalToGlobal[i]]);
 			  
-	    for (int iVertex = 0; iVertex < vertexSize[i]; iVertex++) {
-            temperatures_n[iVertex] = 0;  // Init with zeros - note that temperature array is just scalars!
-        }
 	  
 	  }
 		  
@@ -668,7 +662,7 @@ double Precice::advance(double computedTimestepLength) {
       // 5. Set displacements/displacementDeltas/Temperatures
       if (verbosityLevel_high) {
         cout << "Process #" << solverProcessIndex << "/" << solverProcessSize - 1
-             << ": Advancing preCICE: Setting displacement deltas for "
+             << ": Advancing preCICE: Setting " << readDataString << "s for "
              << config_container[ZONE_0]->GetpreCICE_WetSurfaceMarkerName() << indexMarkerWetMappingLocalToGlobal[i]
              << "..." << endl;
       }

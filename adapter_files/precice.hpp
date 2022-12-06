@@ -52,7 +52,6 @@ class Precice {
   double* displacements;
   double* temperatures;
   double* displacements_n;
-  double* temperatures_n;
   double* displacementDeltas;
   const string& coric;
   const string& cowic;
