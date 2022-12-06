@@ -212,6 +212,7 @@ double Precice::initialize() {
     meshID = new int[globalNumberWetSurfaces];
     forceID = new int[globalNumberWetSurfaces];
     displDeltaID = new int[globalNumberWetSurfaces];
+	tempID = new int[globalNumberWetSurfaces];
     for (int i = 0; i < globalNumberWetSurfaces; i++) {
       // Get preCICE meshIDs
       meshID[i] = solverInterface.getMeshID(preciceMeshName + (i == 0 ? "" : to_string(i)));
@@ -393,6 +394,9 @@ double Precice::advance(double computedTimestepLength) {
 	
 	double factor = 0;
 	
+	readDataString = config_container[ZONE_0]->GetpreCICE_ReadDataName()
+	writeDataString = config_container[ZONE_0]->GetpreCICE_WriteDataName()
+	
 	if (readDataType != ReadDataType::Temperature) {
 		// Get physical simulation information
 		bool incompressible = (config_container[ZONE_0]->GetKind_Regime() == ENUM_REGIME::INCOMPRESSIBLE);
@@ -414,19 +418,16 @@ double Precice::advance(double computedTimestepLength) {
 		// Compute factor for redimensionalizing forces
 		factor = Density_Real * Velocity2_Real / (Density_ND * Velocity2_ND);
 		
-		if (verbosityLevel_high) {
-			cout << "Process #" << solverProcessIndex << "/" << solverProcessSize - 1
-				<< ": Factor for (non-/re-)dimensionalization of forces: " << factor
-				<< endl; /*--- for debugging purposes ---*/
-		}
     } else { // Else doing CHT - get factor for redimensionalizing heat flux
 		
 		factor = config_container[ZONE_0]->GetHeat_Flux_Ref()
-		if (verbosityLevel_high) {
-			cout << "Process #" << solverProcessIndex << "/" << solverProcessSize - 1
-				<< ": Factor for (non-/re-)dimensionalization of heat fluxes: " << factor
-				<< endl; /*--- for debugging purposes ---*/
-		}
+
+	}
+	
+	if (verbosityLevel_high) {
+		cout << "Process #" << solverProcessIndex << "/" << solverProcessSize - 1
+			<< ": Factor for (non-/re-)dimensionalization of " << writeDataString << ": " << factor
+			<< endl; /*--- for debugging purposes ---*/
 	}
 	
 
@@ -434,15 +435,17 @@ double Precice::advance(double computedTimestepLength) {
 		
 	  unsigned long nodeVertex[vertexSize[i]];
 		
+		
+	  // 1. Compute forces/heat fluxes
+	  if (verbosityLevel_high) {
+
+		cout << "Process #" << solverProcessIndex << "/" << solverProcessSize - 1
+			 << ": Advancing preCICE: Computing/Retrieving " << writeDataString << "s for "
+			 << config_container[ZONE_0]->GetpreCICE_WetSurfaceMarkerName() << indexMarkerWetMappingLocalToGlobal[i]
+			 << "..." << endl;
+	  }
 	  // This entire section can probably be rewritten with much simpler code as per SU2v7.4.0
 	  if (readDataType != ReadDataType::Temperature) {
-		  if (verbosityLevel_high) {
-			// 1. Compute forces
-			cout << "Process #" << solverProcessIndex << "/" << solverProcessSize - 1
-				 << ": Advancing preCICE: Computing forces for "
-				 << config_container[ZONE_0]->GetpreCICE_WetSurfaceMarkerName() << indexMarkerWetMappingLocalToGlobal[i]
-				 << "..." << endl;
-		  }
 		  // Some variables to be used:
 		  unsigned long nodeVertex[vertexSize[i]];
 		  double normalsVertex[vertexSize[i]][nDim];
@@ -534,22 +537,7 @@ double Precice::advance(double computedTimestepLength) {
 			}
 		  }
 		  
-		  if (verbosityLevel_high) {
-			cout << "Process #" << solverProcessIndex << "/" << solverProcessSize - 1
-				 << ": Advancing preCICE: ...done computing forces for "
-				 << config_container[ZONE_0]->GetpreCICE_WetSurfaceMarkerName() << indexMarkerWetMappingLocalToGlobal[i]
-				 << endl;
-		  }
 	  } else { // Else we are doing CHT!
-		  if (verbosityLevel_high) {
-			// 1. Retrieve heat fluxes
-			cout << "Process #" << solverProcessIndex << "/" << solverProcessSize - 1
-				 << ": Advancing preCICE: Retrieving heat fluxes for "
-				 << config_container[ZONE_0]->GetpreCICE_WetSurfaceMarkerName() << indexMarkerWetMappingLocalToGlobal[i]
-				 << "..." << endl;
-		  }
-		  
-		  
 
 		  // Get heat flux from solver container
 		  // As from CFlowOutput::LoadSurfaceData, ensure correct retrieval of HeatFlux
@@ -582,19 +570,20 @@ double Precice::advance(double computedTimestepLength) {
 	       }
 	  }
 	  
+	   if (verbosityLevel_high) {
+		cout << "Process #" << solverProcessIndex << "/" << solverProcessSize - 1
+			 << ": Advancing preCICE: ...done computing/retrieving " << writeDataString << "s for "
+			 << config_container[ZONE_0]->GetpreCICE_WetSurfaceMarkerName() << indexMarkerWetMappingLocalToGlobal[i]
+			 << endl;
+	   }
+	  
       // 2. Write forces/heat fluxes
       if (verbosityLevel_high) {
-		if (readDataType != ReadDataType::Temperature) {
-			cout << "Process #" << solverProcessIndex << "/" << solverProcessSize - 1
-				 << ": Advancing preCICE: Writing forces for "
-				 << config_container[ZONE_0]->GetpreCICE_WetSurfaceMarkerName() << indexMarkerWetMappingLocalToGlobal[i]
-				 << "..." << endl;
-		} else {
-			cout << "Process #" << solverProcessIndex << "/" << solverProcessSize - 1
-				 << ": Advancing preCICE: Writing heat fluxes for "
-				 << config_container[ZONE_0]->GetpreCICE_WetSurfaceMarkerName() << indexMarkerWetMappingLocalToGlobal[i]
-				 << "..." << endl;
-		}
+		cout << "Process #" << solverProcessIndex << "/" << solverProcessSize - 1
+			 << ": Advancing preCICE: Writing " << writeDataString << "s for "
+			 << config_container[ZONE_0]->GetpreCICE_WetSurfaceMarkerName() << indexMarkerWetMappingLocalToGlobal[i]
+			 << "..." << endl;
+
       }
 
 	  if (readDataType != ReadDataType::Temperature) {
@@ -607,17 +596,11 @@ double Precice::advance(double computedTimestepLength) {
       }	  
 	
       if (verbosityLevel_high) {
-		if (readDataType != ReadDataType::Temperature) {
-			cout << "Process #" << solverProcessIndex << "/" << solverProcessSize - 1
-				 << ": Advancing preCICE: ...done writing forces for "
-				 << config_container[ZONE_0]->GetpreCICE_WetSurfaceMarkerName() << indexMarkerWetMappingLocalToGlobal[i]
-				 << "." << endl;
-		} else {
-			cout << "Process #" << solverProcessIndex << "/" << solverProcessSize - 1
-				 << ": Advancing preCICE: ...done writing heat fluxes for "
-				 << config_container[ZONE_0]->GetpreCICE_WetSurfaceMarkerName() << indexMarkerWetMappingLocalToGlobal[i]
-				 << "." << endl;
-	    }
+		cout << "Process #" << solverProcessIndex << "/" << solverProcessSize - 1
+			 << ": Advancing preCICE: ...done writing " << writeDataString << "s for "
+			 << config_container[ZONE_0]->GetpreCICE_WetSurfaceMarkerName() << indexMarkerWetMappingLocalToGlobal[i]
+			 << "." << endl;
+
 	  }
       if (forces != NULL) {
         delete[] forces;
@@ -641,10 +624,10 @@ double Precice::advance(double computedTimestepLength) {
 
     // displacements = new double[vertexSize*nDim]; //TODO: Delete later
     for (int i = 0; i < localNumberWetSurfaces; i++) {
-      // 4. Read displacements/displacementDeltas
+      // 4. Read displacements/displacementDeltas/Temperatures
       if (verbosityLevel_high) {
         cout << "Process #" << solverProcessIndex << "/" << solverProcessSize - 1
-             << ": Advancing preCICE: Reading displacement deltas for "
+             << ": Advancing preCICE: Reading " << readDataString << "s for "
              << config_container[ZONE_0]->GetpreCICE_WetSurfaceMarkerName() << indexMarkerWetMappingLocalToGlobal[i]
              << "..." << endl;
       }
@@ -664,18 +647,25 @@ double Precice::advance(double computedTimestepLength) {
                                               vertexIDs[i], displacements);
           break;
         }
+		case ReadDataType::Temperature: {
+		  temperatures = new double[vertexSize[i]];
+		  solverInterface.readBlockVectorData(tempID[indexMarkerWetMappingLocalToGlobal[i]], vertexSize[i],
+                                              vertexIDs[i], temperatures);
+		  
+		  break;
+		}
         default:
           assert(false);
       }
 
       if (verbosityLevel_high) {
         cout << "Process #" << solverProcessIndex << "/" << solverProcessSize - 1
-             << ": Advancing preCICE: ...done reading displacement deltas for "
+             << ": Advancing preCICE: ...done reading " <<  readDataString << "s for "
              << config_container[ZONE_0]->GetpreCICE_WetSurfaceMarkerName() << indexMarkerWetMappingLocalToGlobal[i]
              << "." << endl;
       }
 
-      // 5. Set displacements/displacementDeltas
+      // 5. Set displacements/displacementDeltas/Temperatures
       if (verbosityLevel_high) {
         cout << "Process #" << solverProcessIndex << "/" << solverProcessSize - 1
              << ": Advancing preCICE: Setting displacement deltas for "
