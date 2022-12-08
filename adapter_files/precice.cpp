@@ -391,10 +391,12 @@ double Precice::advance(double computedTimestepLength) {
 	string readDataString = config_container[ZONE_0]->GetpreCICE_ReadDataName();
 	string writeDataString = config_container[ZONE_0]->GetpreCICE_WriteDataName();
 	
+	bool incompressible = false;
+	bool viscous_flow = false;
 	if (readDataType != ReadDataType::Temperature) {
 		// Get physical simulation information
-		bool incompressible = (config_container[ZONE_0]->GetKind_Regime() == ENUM_REGIME::INCOMPRESSIBLE);
-		bool viscous_flow = ((config_container[ZONE_0]->GetKind_Solver() == MAIN_SOLVER::NAVIER_STOKES) ||
+		incompressible = (config_container[ZONE_0]->GetKind_Regime() == ENUM_REGIME::INCOMPRESSIBLE);
+		viscous_flow = ((config_container[ZONE_0]->GetKind_Solver() == MAIN_SOLVER::NAVIER_STOKES) ||
 							 (config_container[ZONE_0]->GetKind_Solver() == MAIN_SOLVER::RANS));
 
 		// Compute factor for redimensionalizing forces ("ND" = Non-Dimensional)
@@ -550,7 +552,7 @@ double Precice::advance(double computedTimestepLength) {
 									  ->GetNode(); /*--- Store all nodes (indices) in a vector ---*/
 									  
 			if (geometry_container[ZONE_0][INST_0][MESH_0]->nodes->GetColor(nodeVertex[iVertex]) == solverProcessIndex) {
-				heatFluxes[iVertex] = factor * solver_container[ZONE_0][INST_0][MESH_0][FLOW_SOL]->GetHeatFlux(valueMarkerWet[i],iVertex)
+				heatFluxes[iVertex] = factor * solver_container[ZONE_0][INST_0][MESH_0][FLOW_SOL]->GetHeatFlux(valueMarkerWet[i],iVertex);
 		  
 			  } else {
 				heatFluxes[iVertex] = 0;
