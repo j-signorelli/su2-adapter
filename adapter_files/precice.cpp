@@ -388,8 +388,8 @@ double Precice::advance(double computedTimestepLength) {
 	
 	double factor = 0;
 	
-	readDataString = config_container[ZONE_0]->GetpreCICE_ReadDataName()
-	writeDataString = config_container[ZONE_0]->GetpreCICE_WriteDataName()
+	string readDataString = config_container[ZONE_0]->GetpreCICE_ReadDataName();
+	string writeDataString = config_container[ZONE_0]->GetpreCICE_WriteDataName();
 	
 	if (readDataType != ReadDataType::Temperature) {
 		// Get physical simulation information
@@ -414,7 +414,7 @@ double Precice::advance(double computedTimestepLength) {
 		
     } else { // Else doing CHT - get factor for redimensionalizing heat flux
 		
-		factor = config_container[ZONE_0]->GetHeat_Flux_Ref()
+		factor = config_container[ZONE_0]->GetHeat_Flux_Ref();
 
 	}
 	
