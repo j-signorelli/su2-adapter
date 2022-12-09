@@ -1,0 +1,5 @@
+*INCLUDE, INPUT=solid_mesh.msh
+*INCLUDE, INPUT=plate_bottom.nam
+*INCLUDE, INPUT=plate_sides.nam
+*INCLUDE, INPUT=wetSurface_solid.nam
+*INCLUDE, INPUT=interface.sur
