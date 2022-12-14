@@ -1,8 +1,6 @@
-*INCLUDE, INPUT=solid_mesh.msh
-*INCLUDE, INPUT=plate_bottom.nam
-*INCLUDE, INPUT=plate_sides.nam
-*INCLUDE, INPUT=wetSurface_solid.nam
-*INCLUDE, INPUT=interface.sur
+*INCLUDE, INPUT=plate.msh
+*SURFACE, NAME=interface, TYPE=NODE
+solid_wetSurface,
 *MATERIAL, NAME=solid
 *DENSITY
 0.1
@@ -13,3 +11,10 @@
 *SOLID SECTION, ELSET=Eall, MATERIAL=solid
 *INITIAL CONDITIONS, TYPE=TEMPERATURE
 Nall, 310
+*HEAT TRANSFER, DIRECT
+0.01, 1
+*BOUNDARY
+Nsolid_bottom,11,11,310
+
+*DFLUX
+Esolid_sides,
