@@ -45,7 +45,7 @@
       <write-data name="Temperature" mesh="Solid-Mesh" />
     </participant>
 
-    <m2n:sockets from="Fluid" to="Solid" exchange-directory=".." />
+    <m2n:sockets from="Fluid" to="Solid" network="ib0" />
 
     <coupling-scheme:serial-implicit>
       <time-window-size value="0.01" />
