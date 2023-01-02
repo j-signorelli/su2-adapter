@@ -56,7 +56,7 @@
       <exchange data="Temperature" mesh="Solid-Mesh" from="Solid" to="Fluid" />
       <relative-convergence-measure limit="1.0e-5" data="Temperature" mesh="Solid-Mesh" />
       <acceleration:aitken>
-        <data mesh="Fluid-Mesh" name="Heat-Flux" />
+        <data mesh="Solid-Mesh" name="Temperature" />
         <initial-relaxation value="0.5" />
       </acceleration:aitken>
     </coupling-scheme:serial-implicit>
