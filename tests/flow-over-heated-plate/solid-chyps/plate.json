@@ -82,7 +82,7 @@
 		"Checkpoint":{
 			"output_name": "Solution",
 			"frequency": 0.2
-		},
+		}
 	},
 	
 	"FiniteElementDefinition":{
