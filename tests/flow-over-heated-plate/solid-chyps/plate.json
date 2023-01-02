@@ -65,7 +65,7 @@
 	"Simulation": {
 		"in_data": "Init",
 		"precice_solver_name": "Solid",
-		"precice_config": "../precice-config.xml"
+		"precice_config": "../precice-config.xml",
 		"ProgressionTracker": {
 			"end_time": 1.0,
 			"TimeStepControl":{
