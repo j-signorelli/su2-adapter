@@ -125,6 +125,15 @@
 			"number_of_elements": [20, 5]
 		}
 	},
+	"SolidSolver": {
+		"Materials": {
+		  "Solid": {}
+		},
+		"ThermalConductivity": {
+		  "dimensionality": "scalar"
+		}
+	},
+	"TemperatureSolver": {},
 	
 	"PreciceWrite": {
 		"Temperature":{
