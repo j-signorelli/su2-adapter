@@ -123,7 +123,8 @@
 			"lower_point": [0,-0.25],
 			"upper_point": [1,0],
 			"number_of_elements": [20, 5]
-		}
+		},
+		"precice_mesh_names": ["","","Solid-Mesh"]
 	},
 	"SolidSolver": {
 		"Materials": {
@@ -134,7 +135,7 @@
 		}
 	},
 	"TemperatureSolver": {},
-	
+
 	"PreciceWrite": {
 		"Temperature":{
 			"3": {
