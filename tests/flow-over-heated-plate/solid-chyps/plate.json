@@ -30,7 +30,7 @@
 				}
 			},
 			// Initialize constant density field of 0.1
-			"Solid/density": {
+			"solid_tracker/solids/Solid/density": {
 				"dimensionality": "scalar",
 				"field_type": "grid_function",
 				"initializer": "constant",
@@ -40,7 +40,7 @@
 			},
 			
 			// Initialize constant cp field of 1000
-			"Solid/cp": {
+			"solid_tracker/solids/Solid/cp": {
 				"dimensionality": "scalar",
 				"field_type": "grid_function",
 				"initializer": "constant",
@@ -49,7 +49,7 @@
 				}
 			},
 			// Initialize constant volume fraction field of 1
-			"Solid/volume_fraction": {
+			"solid_tracker/solids/Solid/volume_fraction": {
 				"dimensionality": "scalar",
 				"field_type": "grid_function",
 				"initializer": "constant",
