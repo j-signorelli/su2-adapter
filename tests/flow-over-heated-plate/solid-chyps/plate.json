@@ -113,7 +113,7 @@
 			},
 			"HOMOGENEOUS_NEUMANN": {
 				"4": {}
-			},
+			}
 		}
 	},
 	"Mesh":{
