@@ -1,0 +1,110 @@
+{
+    "SimulationInitializer": {
+      "out_data": "PlateInit", // File to write
+      "FieldInitialization": {
+        // Initialize constant temperature field of value 310.0
+        "temperature": {
+          "dimensionality": "scalar",
+          "field_type": "grid_function",
+          "initializer": "constant",
+          "Arguments": {
+            "value": 310.0
+          }
+        },
+        // Initialize constant density field of value 0.1
+        "Solid/density": {
+          "dimensionality": "scalar",
+          "field_type": "grid_function",
+          "initializer": "constant",
+          "Arguments": {
+            "value": 0.1
+          }
+        },
+        // Initialize constant cp field of value 1000.0
+        "Solid/cp": {
+          "dimensionality": "scalar",
+          "field_type": "grid_function",
+          "initializer": "constant",
+          "Arguments": {
+            "value": 1000.0
+          }
+        },
+        // Initialize constant volume fraction field of value 1.0
+        "Solid/volume_fraction": {
+          "dimensionality": "scalar",
+          "field_type": "grid_function",
+          "initializer": "constant",
+          "Arguments": {
+            "value": 1.0
+          }
+        },
+        // Initialize constant thermal conductivity field of value 100
+        "thermal_conductivity": {
+          "dimensionality": "scalar",
+          "field_type": "grid_function",
+          "initializer": "constant",
+          "Arguments": {
+            "value": 100
+          }
+        }
+      }
+    },
+    "Simulation": {
+      "in_data": "PlateInit", // Read in data that was initialized
+      "out_data": "PlateSolution", // Write out data using name PlateSolution
+      "end_time": 1.0, // Simulate to 1
+      "time_step": 0.01, //
+      "output_vis": true, // Write visualization files for later viewing in Paraview
+      "vis_steps": 20 // Write out vis files and checkpoint files every 20 time steps
+    },
+    "FiniteElementDefinition": {
+      "order": 1 // Use linear (p = 1) elements
+    },
+    "BoundaryConditions": {
+      "temperature": {
+        "DIRICHLET": {
+            "1": {
+                "value":{
+                    "type": "constant",
+                    "value": 310.0
+                }
+            }
+        },
+        "HOMOGENEOUS_NEUMANN": {
+            "2,4": {}
+        },
+        "NEUMANN":{
+            "3": {
+                "value": {
+                    "type": "precice",
+                    "precice_name": "Heat-Flux"
+                }
+            }
+        }
+      }
+    },
+    "Mesh": {
+		"mesh": "generate", // Generate mesh
+		"serial_refine": 0, // Uniformly refines mesh before parallel-decomposition
+		"parallel_refine": 0, // Uniformly refines mesh after parallel-decomposition
+		"Generator":{
+			"engine": "uniform_cuboid",
+			"lower_point": [0,-0.25],
+			"upper_point": [1,0],
+			"number_of_elements": [20, 5]
+		},
+		"precice_mesh_names": ["","","Solid-Mesh"]
+    },
+    "SolidSolver": {
+      "Materials": { // List of solids by name
+        // Only one solid, named "Solid".
+        // Must have matching density, cp, and volume fraction
+        // entries in "Simulation/in_data" file
+        "Solid": {}
+      },
+      "ThermalConductivity": {
+        "dimensionality": "scalar" // Scalar conductivty, will be read in
+      }
+    },
+    "TemperatureSolver": {} // TemperatureSolver will use all default options.
+  }
