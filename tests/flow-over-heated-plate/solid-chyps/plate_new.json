@@ -12,7 +12,7 @@
           }
         },
         // Initialize constant density field of value 0.1
-        "Solid/density": {
+        "solid_tracker/solids/Solid/density": {
           "dimensionality": "scalar",
           "field_type": "grid_function",
           "initializer": "constant",
@@ -21,7 +21,7 @@
           }
         },
         // Initialize constant cp field of value 1000.0
-        "Solid/cp": {
+        "solid_tracker/solids/Solid/cp": {
           "dimensionality": "scalar",
           "field_type": "grid_function",
           "initializer": "constant",
@@ -30,7 +30,7 @@
           }
         },
         // Initialize constant volume fraction field of value 1.0
-        "Solid/volume_fraction": {
+        "solid_tracker/solids/Solid/volume_fraction": {
           "dimensionality": "scalar",
           "field_type": "grid_function",
           "initializer": "constant",
@@ -39,7 +39,7 @@
           }
         },
         // Initialize constant thermal conductivity field of value 100
-        "thermal_conductivity": {
+        "solid_tracker/solids/thermal_conductivity": {
           "dimensionality": "scalar",
           "field_type": "grid_function",
           "initializer": "constant",
