@@ -52,6 +52,8 @@
     "Simulation": {
       "in_data": "PlateInit", // Read in data that was initialized
       "out_data": "PlateSolution", // Write out data using name PlateSolution
+	  "precice_solver_name": "Solid",
+	  "precice_config": "../precice-config.xml",
       "end_time": 1.0, // Simulate to 1
       "time_step": 0.01, //
       "output_vis": true, // Write visualization files for later viewing in Paraview
@@ -106,5 +108,14 @@
         "dimensionality": "scalar" // Scalar conductivty, will be read in
       }
     },
-    "TemperatureSolver": {} // TemperatureSolver will use all default options.
-  }
+    "TemperatureSolver": {}, // TemperatureSolver will use all default options.
+
+    "PreciceWrite": {
+		"Temperature":{
+			"3": {
+				"field_name": "temperature"
+			}
+		}
+	}
+
+}
