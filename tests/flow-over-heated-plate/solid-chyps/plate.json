@@ -115,10 +115,15 @@
 		}
 	},
 	"Mesh":{
-		"mesh": "plate.mesh",
+		"mesh": "generate",
 		"serial_refine": 0,
 		"parallel_refine": 0,
-		"precice_mesh_names": ["", "", "Solid-Mesh"]
+		"Generator":{
+			"engine": "uniform_cuboid",
+			"lower_point": [0,-0.25],
+			"upper_point": [1,0],
+			"number_of_elements": [20, 5]
+		}
 	},
 	
 	"PreciceWrite": {
