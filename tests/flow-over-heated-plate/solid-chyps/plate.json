@@ -64,6 +64,7 @@
 	
 	"Simulation": {
 		"in_data": "Init",
+		"out_data": "Out",
 		"precice_solver_name": "Solid",
 		"precice_config": "../precice-config.xml",
 		"ProgressionTracker": {
@@ -114,9 +115,15 @@
 		}
 	},
 	"Mesh":{
-		"mesh": "plate.msh",
+		"mesh": "generate",
 		"serial_refine": 0,
 		"parallel_refine": 0,
+		"Generator":{
+			"engine": "uniform_cuboid",
+			"lower_point": [0,-0.25],
+			"upper_point": [1,0],
+			"number_of_elements": [20, 5]
+		},
 		"precice_mesh_names": ["", "", "Solid-Mesh"]
 	},
 	
