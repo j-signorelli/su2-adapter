@@ -30,7 +30,7 @@
 			}
 		},
 		
-		"solid_tracker/solids/Solid/density": {
+		"solid_tracker/solids/Solid1/density": {
 			"dimensionality": "scalar",
 			"field_type": "grid_function",
 			"initializer": "constant",
@@ -39,7 +39,7 @@
 			}
 		},
 		
-		"solid_tracker/solids/Solid/cp": {
+		"solid_tracker/solids/Solid1/cp": {
 			"dimensionality": "scalar",
 			"field_type": "grid_function",
 			"initializer": "constant",
@@ -48,7 +48,7 @@
 			}
 		},
 		
-		"solid_tracker/solids/Solid/volume_fraction": {
+		"solid_tracker/solids/Solid1/volume_fraction": {
 			"dimensionality": "scalar",
 			"field_type": "grid_function",
 			"initializer": "constant",
@@ -128,7 +128,7 @@
 	},
 	"SolidSolver": {
 		"Materials": {
-		  "Solid": {}
+		  "Solid1": {}
 		},
 		"ThermalConductivity": {
 		  "dimensionality": "scalar"
