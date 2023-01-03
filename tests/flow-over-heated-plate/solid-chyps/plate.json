@@ -115,7 +115,7 @@
 		}
 	},
 	"Mesh":{
-		"mesh": "plate.msh",
+		"mesh": "plate.mesh",
 		"serial_refine": 0,
 		"parallel_refine": 0,
 		"precice_mesh_names": ["", "", "Solid-Mesh"]
