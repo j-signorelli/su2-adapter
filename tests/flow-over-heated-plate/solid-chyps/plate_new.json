@@ -108,7 +108,9 @@
         "dimensionality": "scalar" // Scalar conductivty, will be read in
       }
     },
-    "TemperatureSolver": {}, // TemperatureSolver will use all default options.
+    "TemperatureSolver": {
+        "initial_temperature": "temperature"
+    }, // TemperatureSolver will use all default options.
 
     "PreciceWrite": {
 		"Temperature":{
