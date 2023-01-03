@@ -86,8 +86,8 @@
 	},
 	
 	"FiniteElementDefinition":{
-		"order": 1,
-		"bc_order": 1
+		"order": 2,
+		"bc_order": 2
 	},
 	
 	"BoundaryConditions":{
@@ -101,7 +101,7 @@
 				}
 			},
 			"HOMOGENEOUS_NEUMANN": {
-				"2,4": {}
+				"2": {}
 			},
 			"NEUMANN":{
 				"3": {
@@ -110,7 +110,10 @@
 						"precice_name": "Heat-Flux"
 					}
 				}
-			}
+			},
+			"HOMOGENEOUS_NEUMANN": {
+				"4": {}
+			},
 		}
 	},
 	"Mesh":{
