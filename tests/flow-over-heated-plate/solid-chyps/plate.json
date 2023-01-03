@@ -11,6 +11,7 @@
 	"SimulationInitializer": {
 		"out_data": "Init",
 		"FieldInitialization": {
+			// Initialize constant temperature field of 310
 			"temperature": {
 				"dimensionality": "scalar",
 				"field_type": "grid_function",
@@ -18,48 +19,45 @@
 				"Arguments": {
 					"value": 310.0
 				}
+			},
+			// Initialize constant thermal conductivity field of 100
+			"thermal_conductivity": {
+				"dimensionality": "scalar",
+				"field_type": "grid_function",
+				"initializer": "constant",
+				"Arguments": {
+					"value": 100
+				}
+			},
+			// Initialize constant density field of 0.1
+			"Solid/density": {
+				"dimensionality": "scalar",
+				"field_type": "grid_function",
+				"initializer": "constant",
+				"Arguments": {
+					"value": 0.1
+				}
+			},
+			
+			// Initialize constant cp field of 1000
+			"Solid/cp": {
+				"dimensionality": "scalar",
+				"field_type": "grid_function",
+				"initializer": "constant",
+				"Arguments": {
+					"value": 1000.0
+				}
+			},
+			// Initialize constant volume fraction field of 1
+			"Solid/volume_fraction": {
+				"dimensionality": "scalar",
+				"field_type": "grid_function",
+				"initializer": "constant",
+				"Arguments": {
+					"value": 1.0
+				}
 			}
-		},
-		
-		"solid_tracker/solids/thermal_conductivity": {
-			"dimensionality": "scalar",
-			"field_type": "grid_function",
-			"initializer": "constant",
-			"Arguments": {
-				"value": 100
-			}
-		},
-		
-		"solid_tracker/solids/Solid/density": {
-			"dimensionality": "scalar",
-			"field_type": "grid_function",
-			"initializer": "constant",
-			"Arguments": {
-				"value": 0.1
-			}
-		},
-		
-		"solid_tracker/solids/Solid/cp": {
-			"dimensionality": "scalar",
-			"field_type": "grid_function",
-			"initializer": "constant",
-			"Arguments": {
-				"value": 1000.0
-			}
-		},
-		
-		"solid_tracker/solids/Solid/volume_fraction": {
-			"dimensionality": "scalar",
-			"field_type": "grid_function",
-			"initializer": "constant",
-			"Arguments": {
-				"value": 1.0
-			}
-		}
-		
-		
-		
-		
+
 	},
 	
 	"Simulation": {
