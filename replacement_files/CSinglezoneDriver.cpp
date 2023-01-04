@@ -107,7 +107,6 @@ void CSinglezoneDriver::StartSolver() {
     Run();
 
     /*--- Perform some postprocessing on the solution before the update ---*/
-    cout << "Completed Run. Running Postprocess()" << endl;
     Postprocess();
 
     /*--- Update the solution for dual time stepping strategy ---*/
