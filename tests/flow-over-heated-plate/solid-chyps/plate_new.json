@@ -75,15 +75,16 @@
         "HOMOGENEOUS_NEUMANN": {
             "2,4": {}
         },
-        "NEUMANN":{
-            "3": {
-                "value": {
-                    "type": "precice",
-                    "precice_name": "Heat-Flux"
-                }
-            }
-        }
-      }
+	    "NEUMANN":{
+			"3": {
+				"value": {
+					"type": "precice",
+					"precice_name": "Heat-Flux",
+					"value": 0
+				}
+			}
+		}
+	  }
     },
     "Mesh": {
 		"mesh": "generate", // Generate mesh
