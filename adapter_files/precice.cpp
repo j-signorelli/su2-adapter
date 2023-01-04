@@ -682,6 +682,9 @@ double Precice::advance(double computedTimestepLength) {
           }
           break;
         }
+        case ReadDataType::Temperature: {
+          break;// Do nothing
+        }
         default:
           assert(false);
       }
