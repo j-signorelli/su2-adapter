@@ -636,7 +636,7 @@ double Precice::advance(double computedTimestepLength) {
         }
         case ReadDataType::Temperature: {
           temperatures = new double[vertexSize[i]];
-          solverInterface.readBlockVectorData(tempID[indexMarkerWetMappingLocalToGlobal[i]], vertexSize[i],
+          solverInterface.readBlockScalarData(tempID[indexMarkerWetMappingLocalToGlobal[i]], vertexSize[i],
                                               vertexIDs[i], temperatures);
 
           break;
