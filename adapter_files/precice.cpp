@@ -5,7 +5,7 @@
  */
 
 #include "../include/precice.hpp"
-//#include "../../Common/include/containers/container_decorators.hpp"
+// #include "../../Common/include/containers/container_decorators.hpp"
 
 Precice::Precice(const string& preciceConfigurationFileName, const std::string& preciceParticipantName,
                  const std::string& preciceReadDataName_, const std::string& preciceWriteDataName_,
@@ -22,13 +22,13 @@ Precice::Precice(const string& preciceConfigurationFileName, const std::string& 
       grid_movement(grid_movement),
       vertexIDs(NULL),
       forceID(NULL),
-	  heatFluxID(NULL),
+      heatFluxID(NULL),
       displDeltaID(NULL),
-	  tempID(NULL),
+      tempID(NULL),
       forces(NULL),
-	  heatFluxes(NULL),
+      heatFluxes(NULL),
       displacements(NULL),
-	  temperatures(NULL),
+      temperatures(NULL),
       displacements_n(NULL),
       displacementDeltas(NULL),
       // For implicit coupling
@@ -66,7 +66,7 @@ Precice::Precice(const string& preciceConfigurationFileName, const std::string& 
     else
       readDataType = ReadDataType::DisplacementDelta;
   else
-	  readDataType = ReadDataType::Temperature;
+    readDataType = ReadDataType::Temperature;
 
   Coord_Saved = new double*[nPoint];
   Coord_n_Saved = new double*[nPoint];
@@ -106,13 +106,13 @@ Precice::~Precice(void) {
     delete[] forceID;
   }
   if (heatFluxID != NULL) {
-	delete[] heatFluxID;
+    delete[] heatFluxID;
   }
   if (displDeltaID != NULL) {
     delete[] displDeltaID;
   }
   if (tempID != NULL) {
-	delete[] tempID;
+    delete[] tempID;
   }
   if (valueMarkerWet != NULL) {
     delete[] valueMarkerWet;
@@ -188,7 +188,6 @@ Precice::~Precice(void) {
   if (displacements_n != NULL) {
     delete[] displacements_n;
   }
-
 }
 
 double Precice::initialize() {
@@ -210,7 +209,7 @@ double Precice::initialize() {
     meshID = new int[globalNumberWetSurfaces];
     forceID = new int[globalNumberWetSurfaces];
     displDeltaID = new int[globalNumberWetSurfaces];
-	tempID = new int[globalNumberWetSurfaces];
+    tempID = new int[globalNumberWetSurfaces];
     for (int i = 0; i < globalNumberWetSurfaces; i++) {
       // Get preCICE meshIDs
       meshID[i] = solverInterface.getMeshID(preciceMeshName + (i == 0 ? "" : to_string(i)));
@@ -289,42 +288,37 @@ double Precice::initialize() {
 
       solverInterface.setMeshVertices(meshID[indexMarkerWetMappingLocalToGlobal[i]], vertexSize[i], coords,
                                       vertexIDs[i]);
-									  
-	  if (readDataType != ReadDataType::Temperature) {
-		  forceID[indexMarkerWetMappingLocalToGlobal[i]] = solverInterface.getDataID(
-			  preciceWriteDataName +
-				  (indexMarkerWetMappingLocalToGlobal[i] == 0 ? "" : to_string(indexMarkerWetMappingLocalToGlobal[i])),
-			  meshID[indexMarkerWetMappingLocalToGlobal[i]]);
-		  displDeltaID[indexMarkerWetMappingLocalToGlobal[i]] = solverInterface.getDataID(
-			  preciceReadDataName +
-				  (indexMarkerWetMappingLocalToGlobal[i] == 0 ? "" : to_string(indexMarkerWetMappingLocalToGlobal[i])),
-			  meshID[indexMarkerWetMappingLocalToGlobal[i]]);
-			  
-			  
-		  if (readDataType == ReadDataType::Displacement) {
-			displacements_n = new double[vertexSize[i] * nDim];
-			for (int iVertex = 0; iVertex < vertexSize[i]; iVertex++) {
-				for (int iDim = 0; iDim < nDim; iDim++) {
-					displacements_n[iVertex * nDim + iDim] = 0;  // Init with zeros
-				}
-			}
-		  }
-		  
-		  
-      } else { // Else get CHT data IDs
-		heatFluxID[indexMarkerWetMappingLocalToGlobal[i]] = solverInterface.getDataID(
-			  preciceWriteDataName +
-				  (indexMarkerWetMappingLocalToGlobal[i] == 0 ? "" : to_string(indexMarkerWetMappingLocalToGlobal[i])),
-			  meshID[indexMarkerWetMappingLocalToGlobal[i]]);
-			  
-		tempID[indexMarkerWetMappingLocalToGlobal[i]] = solverInterface.getDataID(
-			  preciceReadDataName +
-				  (indexMarkerWetMappingLocalToGlobal[i] == 0 ? "" : to_string(indexMarkerWetMappingLocalToGlobal[i])),
-			  meshID[indexMarkerWetMappingLocalToGlobal[i]]);
-			  
-	  
-	  }
-		  
+
+      if (readDataType != ReadDataType::Temperature) {
+        forceID[indexMarkerWetMappingLocalToGlobal[i]] = solverInterface.getDataID(
+            preciceWriteDataName +
+                (indexMarkerWetMappingLocalToGlobal[i] == 0 ? "" : to_string(indexMarkerWetMappingLocalToGlobal[i])),
+            meshID[indexMarkerWetMappingLocalToGlobal[i]]);
+        displDeltaID[indexMarkerWetMappingLocalToGlobal[i]] = solverInterface.getDataID(
+            preciceReadDataName +
+                (indexMarkerWetMappingLocalToGlobal[i] == 0 ? "" : to_string(indexMarkerWetMappingLocalToGlobal[i])),
+            meshID[indexMarkerWetMappingLocalToGlobal[i]]);
+
+        if (readDataType == ReadDataType::Displacement) {
+          displacements_n = new double[vertexSize[i] * nDim];
+          for (int iVertex = 0; iVertex < vertexSize[i]; iVertex++) {
+            for (int iDim = 0; iDim < nDim; iDim++) {
+              displacements_n[iVertex * nDim + iDim] = 0;  // Init with zeros
+            }
+          }
+        }
+
+      } else {  // Else get CHT data IDs
+        heatFluxID[indexMarkerWetMappingLocalToGlobal[i]] = solverInterface.getDataID(
+            preciceWriteDataName +
+                (indexMarkerWetMappingLocalToGlobal[i] == 0 ? "" : to_string(indexMarkerWetMappingLocalToGlobal[i])),
+            meshID[indexMarkerWetMappingLocalToGlobal[i]]);
+
+        tempID[indexMarkerWetMappingLocalToGlobal[i]] = solverInterface.getDataID(
+            preciceReadDataName +
+                (indexMarkerWetMappingLocalToGlobal[i] == 0 ? "" : to_string(indexMarkerWetMappingLocalToGlobal[i])),
+            meshID[indexMarkerWetMappingLocalToGlobal[i]]);
+      }
     }
     for (int i = 0; i < globalNumberWetSurfaces; i++) {
       bool flag = false;
@@ -335,38 +329,37 @@ double Precice::initialize() {
       }
       if (!flag) {
         solverInterface.setMeshVertices(meshID[i], 0, NULL, NULL);
-		if (readDataType != ReadDataType::Temperature) {
-			forceID[i] = solverInterface.getDataID(preciceWriteDataName + (i == 0 ? "" : to_string(i)), meshID[i]);
-			displDeltaID[i] = solverInterface.getDataID(preciceReadDataName + (i == 0 ? "" : to_string(i)), meshID[i]);
-		} else {
-			heatFluxID[i] = solverInterface.getDataID(preciceWriteDataName + (i == 0 ? "" : to_string(i)), meshID[i]);
-			tempID[i] = solverInterface.getDataID(preciceReadDataName + (i == 0 ? "" : to_string(i)), meshID[i]);
-		}
-	  }
+        if (readDataType != ReadDataType::Temperature) {
+          forceID[i] = solverInterface.getDataID(preciceWriteDataName + (i == 0 ? "" : to_string(i)), meshID[i]);
+          displDeltaID[i] = solverInterface.getDataID(preciceReadDataName + (i == 0 ? "" : to_string(i)), meshID[i]);
+        } else {
+          heatFluxID[i] = solverInterface.getDataID(preciceWriteDataName + (i == 0 ? "" : to_string(i)), meshID[i]);
+          tempID[i] = solverInterface.getDataID(preciceReadDataName + (i == 0 ? "" : to_string(i)), meshID[i]);
+        }
+      }
     }
   } else {
     for (int i = 0; i < globalNumberWetSurfaces; i++) {
       solverInterface.setMeshVertices(meshID[i], 0, NULL, NULL);
       if (readDataType != ReadDataType::Temperature) {
-			forceID[i] = solverInterface.getDataID(preciceWriteDataName + (i == 0 ? "" : to_string(i)), meshID[i]);
-			displDeltaID[i] = solverInterface.getDataID(preciceReadDataName + (i == 0 ? "" : to_string(i)), meshID[i]);
-	  } else {
-		    heatFluxID[i] = solverInterface.getDataID(preciceWriteDataName + (i == 0 ? "" : to_string(i)), meshID[i]);
-			tempID[i] = solverInterface.getDataID(preciceReadDataName + (i == 0 ? "" : to_string(i)), meshID[i]);
-	  }
-	}
+        forceID[i] = solverInterface.getDataID(preciceWriteDataName + (i == 0 ? "" : to_string(i)), meshID[i]);
+        displDeltaID[i] = solverInterface.getDataID(preciceReadDataName + (i == 0 ? "" : to_string(i)), meshID[i]);
+      } else {
+        heatFluxID[i] = solverInterface.getDataID(preciceWriteDataName + (i == 0 ? "" : to_string(i)), meshID[i]);
+        tempID[i] = solverInterface.getDataID(preciceReadDataName + (i == 0 ? "" : to_string(i)), meshID[i]);
+      }
+    }
   }
 
   if (verbosityLevel_high and readDataType != ReadDataType::Temperature) {
     cout << "Process #" << solverProcessIndex << "/" << solverProcessSize - 1
          << ": There is grid movement (expected: 1): " << config_container[ZONE_0]->GetGrid_Movement()
          << endl; /*--- for debugging purposes ---*/
-	/* No longer relevant: SU2 differentiates between a surface movement and grid movement now - no kind of grid movement occurring
-    cout << "Process #" << solverProcessIndex << "/" << solverProcessSize - 1
-         << ": Kind of grid movement (expected: 13): " << config_container[ZONE_0]->GetKind_GridMovement()
-         << endl; 
-		 --- for debugging purposes ---*/
-	
+    /* No longer relevant: SU2 differentiates between a surface movement and grid movement now - no kind of grid
+movement occurring cout << "Process #" << solverProcessIndex << "/" << solverProcessSize - 1
+     << ": Kind of grid movement (expected: 13): " << config_container[ZONE_0]->GetKind_GridMovement()
+     << endl;
+             --- for debugging purposes ---*/
   }
 
   double precice_dt; /*--- preCICE timestep size ---*/
@@ -386,223 +379,220 @@ double Precice::advance(double computedTimestepLength) {
     if (verbosityLevel_high) {
       cout << "Process #" << solverProcessIndex << "/" << solverProcessSize - 1 << ": Advancing preCICE..." << endl;
     }
-	
-	double factor = 0;
-	
-	string readDataString = config_container[ZONE_0]->GetpreCICE_ReadDataName();
-	string writeDataString = config_container[ZONE_0]->GetpreCICE_WriteDataName();
-	
-	bool incompressible = false;
-	bool viscous_flow = false;
-	if (readDataType != ReadDataType::Temperature) {
-		// Get physical simulation information
-		incompressible = (config_container[ZONE_0]->GetKind_Regime() == ENUM_REGIME::INCOMPRESSIBLE);
-		viscous_flow = ((config_container[ZONE_0]->GetKind_Solver() == MAIN_SOLVER::NAVIER_STOKES) ||
-							 (config_container[ZONE_0]->GetKind_Solver() == MAIN_SOLVER::RANS));
 
-		// Compute factor for redimensionalizing forces ("ND" = Non-Dimensional)
-		double* Velocity_Real = config_container[ZONE_0]->GetVelocity_FreeStream();
-		double Density_Real = config_container[ZONE_0]->GetDensity_FreeStream();
-		double* Velocity_ND = config_container[ZONE_0]->GetVelocity_FreeStreamND();
-		double Density_ND = config_container[ZONE_0]->GetDensity_FreeStreamND();
-		double Velocity2_Real = 0.0; /*--- denotes squared real velocity ---*/
-		double Velocity2_ND = 0.0;   /*--- denotes squared non-dimensional velocity ---*/
-		// Compute squared values
-		for (int iDim = 0; iDim < nDim; iDim++) {
-		  Velocity2_Real += Velocity_Real[iDim] * Velocity_Real[iDim];
-		  Velocity2_ND += Velocity_ND[iDim] * Velocity_ND[iDim];
-		}
-		// Compute factor for redimensionalizing forces
-		factor = Density_Real * Velocity2_Real / (Density_ND * Velocity2_ND);
-		
-    } else { // Else doing CHT - get factor for redimensionalizing heat flux
-		
-		factor = config_container[ZONE_0]->GetHeat_Flux_Ref();
+    double factor = 0;
 
-	}
-	
-	if (verbosityLevel_high) {
-		cout << "Process #" << solverProcessIndex << "/" << solverProcessSize - 1
-			<< ": Factor for (non-/re-)dimensionalization of " << writeDataString << ": " << factor
-			<< endl; /*--- for debugging purposes ---*/
-	}
-	
+    string readDataString = config_container[ZONE_0]->GetpreCICE_ReadDataName();
+    string writeDataString = config_container[ZONE_0]->GetpreCICE_WriteDataName();
+
+    bool incompressible = false;
+    bool viscous_flow = false;
+    if (readDataType != ReadDataType::Temperature) {
+      // Get physical simulation information
+      incompressible = (config_container[ZONE_0]->GetKind_Regime() == ENUM_REGIME::INCOMPRESSIBLE);
+      viscous_flow = ((config_container[ZONE_0]->GetKind_Solver() == MAIN_SOLVER::NAVIER_STOKES) ||
+                      (config_container[ZONE_0]->GetKind_Solver() == MAIN_SOLVER::RANS));
+
+      // Compute factor for redimensionalizing forces ("ND" = Non-Dimensional)
+      double* Velocity_Real = config_container[ZONE_0]->GetVelocity_FreeStream();
+      double Density_Real = config_container[ZONE_0]->GetDensity_FreeStream();
+      double* Velocity_ND = config_container[ZONE_0]->GetVelocity_FreeStreamND();
+      double Density_ND = config_container[ZONE_0]->GetDensity_FreeStreamND();
+      double Velocity2_Real = 0.0; /*--- denotes squared real velocity ---*/
+      double Velocity2_ND = 0.0;   /*--- denotes squared non-dimensional velocity ---*/
+      // Compute squared values
+      for (int iDim = 0; iDim < nDim; iDim++) {
+        Velocity2_Real += Velocity_Real[iDim] * Velocity_Real[iDim];
+        Velocity2_ND += Velocity_ND[iDim] * Velocity_ND[iDim];
+      }
+      // Compute factor for redimensionalizing forces
+      factor = Density_Real * Velocity2_Real / (Density_ND * Velocity2_ND);
+
+    } else {  // Else doing CHT - get factor for redimensionalizing heat flux
+
+      factor = config_container[ZONE_0]->GetHeat_Flux_Ref();
+    }
+
+    if (verbosityLevel_high) {
+      cout << "Process #" << solverProcessIndex << "/" << solverProcessSize - 1
+           << ": Factor for (non-/re-)dimensionalization of " << writeDataString << ": " << factor
+           << endl; /*--- for debugging purposes ---*/
+    }
 
     for (int i = 0; i < localNumberWetSurfaces; i++) {
-		
-	  unsigned long nodeVertex[vertexSize[i]];
-		
-		
-	  // 1. Compute forces/heat fluxes
-	  if (verbosityLevel_high) {
+      unsigned long nodeVertex[vertexSize[i]];
 
-		cout << "Process #" << solverProcessIndex << "/" << solverProcessSize - 1
-			 << ": Advancing preCICE: Computing/Retrieving " << writeDataString << "s for "
-			 << config_container[ZONE_0]->GetpreCICE_WetSurfaceMarkerName() << indexMarkerWetMappingLocalToGlobal[i]
-			 << "..." << endl;
-	  }
-	  // This entire section can probably be rewritten with much simpler code as per SU2v7.4.0
-	  if (readDataType != ReadDataType::Temperature) {
-		  // Some variables to be used:
-		  unsigned long nodeVertex[vertexSize[i]];
-		  double normalsVertex[vertexSize[i]][nDim];
-		  double normalsVertex_Unit[vertexSize[i]][nDim];
-		  double Area;
-		  double Pn = 0.0;   /*--- denotes pressure at a node ---*/
-		  double Pinf = 0.0; /*--- denotes environmental (farfield) pressure ---*/
-		  //double** Grad_PrimVar =
-		  CMatrixView<double> Grad_PrimVar =
-			  NULL; /*--- denotes (u.A. velocity) gradients needed for computation of viscous forces ---*/
-		  double Viscosity = 0.0;
-		  double Tau[3][3];
-		  double TauElem[3];
-		  double forces_su2[vertexSize[i]][nDim]; /*--- forces will be stored such, before converting to simple array ---*/
-
-		  /*--- Loop over vertices of coupled boundary ---*/
-		  for (int iVertex = 0; iVertex < vertexSize[i]; iVertex++) {
-			// Get node number (= index) to vertex (= node)
-			nodeVertex[iVertex] = geometry_container[ZONE_0][INST_0][MESH_0]
-									  ->vertex[valueMarkerWet[i]][iVertex]
-									  ->GetNode(); /*--- Store all nodes (indices) in a vector ---*/
-			// Get normal vector
-			for (int iDim = 0; iDim < nDim; iDim++) {
-			  normalsVertex[iVertex][iDim] =
-				  (geometry_container[ZONE_0][INST_0][MESH_0]->vertex[valueMarkerWet[i]][iVertex]->GetNormal())[iDim];
-			}
-			// Unit normals
-			Area = 0.0;
-			for (int iDim = 0; iDim < nDim; iDim++) {
-			  Area += normalsVertex[iVertex][iDim] * normalsVertex[iVertex][iDim];
-			}
-			Area = sqrt(Area);
-			for (int iDim = 0; iDim < nDim; iDim++) {
-			  normalsVertex_Unit[iVertex][iDim] = normalsVertex[iVertex][iDim] / Area;
-			}
-			// Get the values of pressure and viscosity
-			Pn = solver_container[ZONE_0][INST_0][MESH_0][FLOW_SOL]->GetNodes()->GetPressure(nodeVertex[iVertex]);
-			Pinf = solver_container[ZONE_0][INST_0][MESH_0][FLOW_SOL]->GetPressure_Inf();
-			if (viscous_flow) {
-			  Grad_PrimVar = solver_container[ZONE_0][INST_0][MESH_0][FLOW_SOL]->GetNodes()->GetGradient_Primitive()[nodeVertex[iVertex]];
-			  Viscosity = solver_container[ZONE_0][INST_0][MESH_0][FLOW_SOL]->GetNodes()->GetLaminarViscosity(nodeVertex[iVertex]);
-			}
-
-			// Calculate the forces_su2 in the nodes for the inviscid term --> Units of force (non-dimensional).
-			for (int iDim = 0; iDim < nDim; iDim++) {
-			  forces_su2[iVertex][iDim] = -(Pn - Pinf) * normalsVertex[iVertex][iDim];
-			}
-			// Calculate the forces_su2 in the nodes for the viscous term
-			if (viscous_flow) {
-			  // Divergence of the velocity
-			  double div_vel = 0.0;
-			  for (int iDim = 0; iDim < nDim; iDim++) {
-				div_vel += Grad_PrimVar[iDim + 1][iDim];
-			  }
-			  if (incompressible) {
-				div_vel = 0.0; /*--- incompressible flow is divergence-free ---*/
-			  }
-			  for (int iDim = 0; iDim < nDim; iDim++) {
-				for (int jDim = 0; jDim < nDim; jDim++) {
-				  // Dirac delta
-				  double Delta = 0.0;
-				  if (iDim == jDim) {
-					Delta = 1.0;
-				  }
-				  // Viscous stress
-				  Tau[iDim][jDim] = Viscosity * (Grad_PrimVar[jDim + 1][iDim] + Grad_PrimVar[iDim + 1][jDim]) -
-									2 / 3 * Viscosity * div_vel * Delta;
-				  // Add Viscous component in the forces_su2 vector --> Units of force (non-dimensional).
-				  forces_su2[iVertex][iDim] += Tau[iDim][jDim] * normalsVertex[iVertex][jDim];
-				}
-			  }
-			}
-			// Rescale forces_su2 to SI units
-			for (int iDim = 0; iDim < nDim; iDim++) {
-			  forces_su2[iVertex][iDim] = forces_su2[iVertex][iDim] * factor;
-			}
-		  }
-		  // convert forces_su2 into forces
-		  forces = new double[vertexSize[i] * nDim];
-		  for (int iVertex = 0; iVertex < vertexSize[i]; iVertex++) {
-			for (int iDim = 0; iDim < nDim; iDim++) {
-			  // Do not write forces for duplicate nodes! -> Check wether the color of the node matches the MPI-rank of this
-			  // process. Only write forces, if node originally belongs to this process.
-			  if (geometry_container[ZONE_0][INST_0][MESH_0]->nodes->GetColor(nodeVertex[iVertex]) == solverProcessIndex) {
-				forces[iVertex * nDim + iDim] = forces_su2[iVertex][iDim];
-			  } else {
-				forces[iVertex * nDim + iDim] = 0;
-			  }
-			}
-		  }
-		  
-	  } else { // Else we are doing CHT!
-
-		  // Get heat flux from solver container
-		  // As from CFlowOutput::LoadSurfaceData, ensure correct retrieval of HeatFlux
-		  const auto heat_sol = (config_container[ZONE_0]->GetKind_Regime() == ENUM_REGIME::INCOMPRESSIBLE) &&
-                         config_container[ZONE_0]->GetWeakly_Coupled_Heat() ? HEAT_SOL : FLOW_SOL;
-		  
-		  
-		  heatFluxes = new double[vertexSize[i]]; // Only one wall normal heat flux value to be sent!
-		  
-		  
-		  /*--- Loop over vertices of coupled boundary ---*/
-		  for (int iVertex = 0; iVertex < vertexSize[i]; iVertex++) {
-			// Get node number (= index) to vertex (= node)
-			nodeVertex[iVertex] = geometry_container[ZONE_0][INST_0][MESH_0]
-									  ->vertex[valueMarkerWet[i]][iVertex]
-									  ->GetNode(); /*--- Store all nodes (indices) in a vector ---*/
-									  
-			if (geometry_container[ZONE_0][INST_0][MESH_0]->nodes->GetColor(nodeVertex[iVertex]) == solverProcessIndex) {
-				heatFluxes[iVertex] = factor * solver_container[ZONE_0][INST_0][MESH_0][heat_sol]->GetHeatFlux(valueMarkerWet[i],iVertex);
-		  
-			  } else {
-				heatFluxes[iVertex] = 0;
-			  }
-		   }
-		   if (verbosityLevel_high) {
-			cout << "Process #" << solverProcessIndex << "/" << solverProcessSize - 1
-				 << ": Advancing preCICE: ...done retrieving heat fluxes for "
-				 << config_container[ZONE_0]->GetpreCICE_WetSurfaceMarkerName() << indexMarkerWetMappingLocalToGlobal[i]
-				 << endl;
-	       }
-	  }
-	  
-	   if (verbosityLevel_high) {
-		cout << "Process #" << solverProcessIndex << "/" << solverProcessSize - 1
-			 << ": Advancing preCICE: ...done computing/retrieving " << writeDataString << "s for "
-			 << config_container[ZONE_0]->GetpreCICE_WetSurfaceMarkerName() << indexMarkerWetMappingLocalToGlobal[i]
-			 << endl;
-	   }
-	  
-      // 2. Write forces/heat fluxes
+      // 1. Compute forces/heat fluxes
       if (verbosityLevel_high) {
-		cout << "Process #" << solverProcessIndex << "/" << solverProcessSize - 1
-			 << ": Advancing preCICE: Writing " << writeDataString << "s for "
-			 << config_container[ZONE_0]->GetpreCICE_WetSurfaceMarkerName() << indexMarkerWetMappingLocalToGlobal[i]
-			 << "..." << endl;
+        cout << "Process #" << solverProcessIndex << "/" << solverProcessSize - 1
+             << ": Advancing preCICE: Computing/Retrieving " << writeDataString << "s for "
+             << config_container[ZONE_0]->GetpreCICE_WetSurfaceMarkerName() << indexMarkerWetMappingLocalToGlobal[i]
+             << "..." << endl;
+      }
+      // This entire section can probably be rewritten with much simpler code as per SU2v7.4.0
+      if (readDataType != ReadDataType::Temperature) {
+        // Some variables to be used:
+        unsigned long nodeVertex[vertexSize[i]];
+        double normalsVertex[vertexSize[i]][nDim];
+        double normalsVertex_Unit[vertexSize[i]][nDim];
+        double Area;
+        double Pn = 0.0;   /*--- denotes pressure at a node ---*/
+        double Pinf = 0.0; /*--- denotes environmental (farfield) pressure ---*/
+        // double** Grad_PrimVar =
+        CMatrixView<double> Grad_PrimVar =
+            NULL; /*--- denotes (u.A. velocity) gradients needed for computation of viscous forces ---*/
+        double Viscosity = 0.0;
+        double Tau[3][3];
+        double TauElem[3];
+        double forces_su2[vertexSize[i]]
+                         [nDim]; /*--- forces will be stored such, before converting to simple array ---*/
 
+        /*--- Loop over vertices of coupled boundary ---*/
+        for (int iVertex = 0; iVertex < vertexSize[i]; iVertex++) {
+          // Get node number (= index) to vertex (= node)
+          nodeVertex[iVertex] = geometry_container[ZONE_0][INST_0][MESH_0]
+                                    ->vertex[valueMarkerWet[i]][iVertex]
+                                    ->GetNode(); /*--- Store all nodes (indices) in a vector ---*/
+          // Get normal vector
+          for (int iDim = 0; iDim < nDim; iDim++) {
+            normalsVertex[iVertex][iDim] =
+                (geometry_container[ZONE_0][INST_0][MESH_0]->vertex[valueMarkerWet[i]][iVertex]->GetNormal())[iDim];
+          }
+          // Unit normals
+          Area = 0.0;
+          for (int iDim = 0; iDim < nDim; iDim++) {
+            Area += normalsVertex[iVertex][iDim] * normalsVertex[iVertex][iDim];
+          }
+          Area = sqrt(Area);
+          for (int iDim = 0; iDim < nDim; iDim++) {
+            normalsVertex_Unit[iVertex][iDim] = normalsVertex[iVertex][iDim] / Area;
+          }
+          // Get the values of pressure and viscosity
+          Pn = solver_container[ZONE_0][INST_0][MESH_0][FLOW_SOL]->GetNodes()->GetPressure(nodeVertex[iVertex]);
+          Pinf = solver_container[ZONE_0][INST_0][MESH_0][FLOW_SOL]->GetPressure_Inf();
+          if (viscous_flow) {
+            Grad_PrimVar = solver_container[ZONE_0][INST_0][MESH_0][FLOW_SOL]
+                               ->GetNodes()
+                               ->GetGradient_Primitive()[nodeVertex[iVertex]];
+            Viscosity = solver_container[ZONE_0][INST_0][MESH_0][FLOW_SOL]->GetNodes()->GetLaminarViscosity(
+                nodeVertex[iVertex]);
+          }
+
+          // Calculate the forces_su2 in the nodes for the inviscid term --> Units of force (non-dimensional).
+          for (int iDim = 0; iDim < nDim; iDim++) {
+            forces_su2[iVertex][iDim] = -(Pn - Pinf) * normalsVertex[iVertex][iDim];
+          }
+          // Calculate the forces_su2 in the nodes for the viscous term
+          if (viscous_flow) {
+            // Divergence of the velocity
+            double div_vel = 0.0;
+            for (int iDim = 0; iDim < nDim; iDim++) {
+              div_vel += Grad_PrimVar[iDim + 1][iDim];
+            }
+            if (incompressible) {
+              div_vel = 0.0; /*--- incompressible flow is divergence-free ---*/
+            }
+            for (int iDim = 0; iDim < nDim; iDim++) {
+              for (int jDim = 0; jDim < nDim; jDim++) {
+                // Dirac delta
+                double Delta = 0.0;
+                if (iDim == jDim) {
+                  Delta = 1.0;
+                }
+                // Viscous stress
+                Tau[iDim][jDim] = Viscosity * (Grad_PrimVar[jDim + 1][iDim] + Grad_PrimVar[iDim + 1][jDim]) -
+                                  2 / 3 * Viscosity * div_vel * Delta;
+                // Add Viscous component in the forces_su2 vector --> Units of force (non-dimensional).
+                forces_su2[iVertex][iDim] += Tau[iDim][jDim] * normalsVertex[iVertex][jDim];
+              }
+            }
+          }
+          // Rescale forces_su2 to SI units
+          for (int iDim = 0; iDim < nDim; iDim++) {
+            forces_su2[iVertex][iDim] = forces_su2[iVertex][iDim] * factor;
+          }
+        }
+        // convert forces_su2 into forces
+        forces = new double[vertexSize[i] * nDim];
+        for (int iVertex = 0; iVertex < vertexSize[i]; iVertex++) {
+          for (int iDim = 0; iDim < nDim; iDim++) {
+            // Do not write forces for duplicate nodes! -> Check wether the color of the node matches the MPI-rank of
+            // this process. Only write forces, if node originally belongs to this process.
+            if (geometry_container[ZONE_0][INST_0][MESH_0]->nodes->GetColor(nodeVertex[iVertex]) ==
+                solverProcessIndex) {
+              forces[iVertex * nDim + iDim] = forces_su2[iVertex][iDim];
+            } else {
+              forces[iVertex * nDim + iDim] = 0;
+            }
+          }
+        }
+
+      } else {  // Else we are doing CHT!
+
+        // Get heat flux from solver container
+        // As from CFlowOutput::LoadSurfaceData, ensure correct retrieval of HeatFlux
+        const auto heat_sol = (config_container[ZONE_0]->GetKind_Regime() == ENUM_REGIME::INCOMPRESSIBLE) &&
+                                      config_container[ZONE_0]->GetWeakly_Coupled_Heat()
+                                  ? HEAT_SOL
+                                  : FLOW_SOL;
+
+        heatFluxes = new double[vertexSize[i]];  // Only one wall normal heat flux value to be sent!
+
+        /*--- Loop over vertices of coupled boundary ---*/
+        for (int iVertex = 0; iVertex < vertexSize[i]; iVertex++) {
+          // Get node number (= index) to vertex (= node)
+          nodeVertex[iVertex] = geometry_container[ZONE_0][INST_0][MESH_0]
+                                    ->vertex[valueMarkerWet[i]][iVertex]
+                                    ->GetNode(); /*--- Store all nodes (indices) in a vector ---*/
+
+          if (geometry_container[ZONE_0][INST_0][MESH_0]->nodes->GetColor(nodeVertex[iVertex]) == solverProcessIndex) {
+            heatFluxes[iVertex] =
+                factor * solver_container[ZONE_0][INST_0][MESH_0][heat_sol]->GetHeatFlux(valueMarkerWet[i], iVertex);
+
+          } else {
+            heatFluxes[iVertex] = 0;
+          }
+        }
+        if (verbosityLevel_high) {
+          cout << "Process #" << solverProcessIndex << "/" << solverProcessSize - 1
+               << ": Advancing preCICE: ...done retrieving heat fluxes for "
+               << config_container[ZONE_0]->GetpreCICE_WetSurfaceMarkerName() << indexMarkerWetMappingLocalToGlobal[i]
+               << endl;
+        }
       }
 
-	  if (readDataType != ReadDataType::Temperature) {
-		  solverInterface.writeBlockVectorData(forceID[indexMarkerWetMappingLocalToGlobal[i]], vertexSize[i], vertexIDs[i],
-											   forces);
-	  } else {
-		  solverInterface.writeBlockScalarData(heatFluxID[indexMarkerWetMappingLocalToGlobal[i]], vertexSize[i], vertexIDs[i],
-											   heatFluxes);
-
-      }	  
-	
       if (verbosityLevel_high) {
-		cout << "Process #" << solverProcessIndex << "/" << solverProcessSize - 1
-			 << ": Advancing preCICE: ...done writing " << writeDataString << "s for "
-			 << config_container[ZONE_0]->GetpreCICE_WetSurfaceMarkerName() << indexMarkerWetMappingLocalToGlobal[i]
-			 << "." << endl;
+        cout << "Process #" << solverProcessIndex << "/" << solverProcessSize - 1
+             << ": Advancing preCICE: ...done computing/retrieving " << writeDataString << "s for "
+             << config_container[ZONE_0]->GetpreCICE_WetSurfaceMarkerName() << indexMarkerWetMappingLocalToGlobal[i]
+             << endl;
+      }
 
-	  }
+      // 2. Write forces/heat fluxes
+      if (verbosityLevel_high) {
+        cout << "Process #" << solverProcessIndex << "/" << solverProcessSize - 1 << ": Advancing preCICE: Writing "
+             << writeDataString << "s for " << config_container[ZONE_0]->GetpreCICE_WetSurfaceMarkerName()
+             << indexMarkerWetMappingLocalToGlobal[i] << "..." << endl;
+      }
+
+      if (readDataType != ReadDataType::Temperature) {
+        solverInterface.writeBlockVectorData(forceID[indexMarkerWetMappingLocalToGlobal[i]], vertexSize[i],
+                                             vertexIDs[i], forces);
+      } else {
+        solverInterface.writeBlockScalarData(heatFluxID[indexMarkerWetMappingLocalToGlobal[i]], vertexSize[i],
+                                             vertexIDs[i], heatFluxes);
+      }
+
+      if (verbosityLevel_high) {
+        cout << "Process #" << solverProcessIndex << "/" << solverProcessSize - 1
+             << ": Advancing preCICE: ...done writing " << writeDataString << "s for "
+             << config_container[ZONE_0]->GetpreCICE_WetSurfaceMarkerName() << indexMarkerWetMappingLocalToGlobal[i]
+             << "." << endl;
+      }
       if (forces != NULL) {
         delete[] forces;
       }
-	  if (heatFluxes != NULL) {
+      if (heatFluxes != NULL) {
         delete[] heatFluxes;
       }
     }
@@ -623,10 +613,9 @@ double Precice::advance(double computedTimestepLength) {
     for (int i = 0; i < localNumberWetSurfaces; i++) {
       // 4. Read displacements/displacementDeltas/Temperatures
       if (verbosityLevel_high) {
-        cout << "Process #" << solverProcessIndex << "/" << solverProcessSize - 1
-             << ": Advancing preCICE: Reading " << readDataString << "s for "
-             << config_container[ZONE_0]->GetpreCICE_WetSurfaceMarkerName() << indexMarkerWetMappingLocalToGlobal[i]
-             << "..." << endl;
+        cout << "Process #" << solverProcessIndex << "/" << solverProcessSize - 1 << ": Advancing preCICE: Reading "
+             << readDataString << "s for " << config_container[ZONE_0]->GetpreCICE_WetSurfaceMarkerName()
+             << indexMarkerWetMappingLocalToGlobal[i] << "..." << endl;
       }
       double displacementDeltas_su2[vertexSize[i]][nDim]; /*--- displacementDeltas will be stored such, before
                                                              converting to simple array ---*/
@@ -644,30 +633,29 @@ double Precice::advance(double computedTimestepLength) {
                                               vertexIDs[i], displacements);
           break;
         }
-		case ReadDataType::Temperature: {
-		  temperatures = new double[vertexSize[i]];
-		  solverInterface.readBlockVectorData(tempID[indexMarkerWetMappingLocalToGlobal[i]], vertexSize[i],
+        case ReadDataType::Temperature: {
+          temperatures = new double[vertexSize[i]];
+          solverInterface.readBlockVectorData(tempID[indexMarkerWetMappingLocalToGlobal[i]], vertexSize[i],
                                               vertexIDs[i], temperatures);
-		  
-		  break;
-		}
+
+          break;
+        }
         default:
           assert(false);
       }
 
       if (verbosityLevel_high) {
         cout << "Process #" << solverProcessIndex << "/" << solverProcessSize - 1
-             << ": Advancing preCICE: ...done reading " <<  readDataString << "s for "
+             << ": Advancing preCICE: ...done reading " << readDataString << "s for "
              << config_container[ZONE_0]->GetpreCICE_WetSurfaceMarkerName() << indexMarkerWetMappingLocalToGlobal[i]
              << "." << endl;
       }
 
       // 5. Set displacements/displacementDeltas/Temperatures
       if (verbosityLevel_high) {
-        cout << "Process #" << solverProcessIndex << "/" << solverProcessSize - 1
-             << ": Advancing preCICE: Setting " << readDataString << "s for "
-             << config_container[ZONE_0]->GetpreCICE_WetSurfaceMarkerName() << indexMarkerWetMappingLocalToGlobal[i]
-             << "..." << endl;
+        cout << "Process #" << solverProcessIndex << "/" << solverProcessSize - 1 << ": Advancing preCICE: Setting "
+             << readDataString << "s for " << config_container[ZONE_0]->GetpreCICE_WetSurfaceMarkerName()
+             << indexMarkerWetMappingLocalToGlobal[i] << "..." << endl;
       }
       // convert displacementDeltas into displacementDeltas_su2 -- unnecessary step for temperatures
       switch (readDataType) {
@@ -703,27 +691,27 @@ double Precice::advance(double computedTimestepLength) {
       if (displacements != NULL) {
         delete[] displacements;
       }
-	  // temperatures not yet de-allocated as the values in the array itself are used
-	  
-	  
+      // temperatures not yet de-allocated as the values in the array itself are used
+
       // Set change of coordinates (i.e. displacementDeltas) OR set temperatures
       for (int iVertex = 0; iVertex < vertexSize[i]; iVertex++) {
-		if (readDataType != ReadDataType::Temperature) {
-			geometry_container[ZONE_0][INST_0][MESH_0]->vertex[valueMarkerWet[i]][iVertex]->SetVarCoord(
-				displacementDeltas_su2[iVertex]);
-		} else { // Else we are doing CHT
-			geometry_container[ZONE_0][INST_0][MESH_0]->SetCustomBoundaryTemperature(valueMarkerWet[i], iVertex, temperatures[iVertex]); 
-		}
+        if (readDataType != ReadDataType::Temperature) {
+          geometry_container[ZONE_0][INST_0][MESH_0]->vertex[valueMarkerWet[i]][iVertex]->SetVarCoord(
+              displacementDeltas_su2[iVertex]);
+        } else {  // Else we are doing CHT
+          geometry_container[ZONE_0][INST_0][MESH_0]->SetCustomBoundaryTemperature(valueMarkerWet[i], iVertex,
+                                                                                   temperatures[iVertex]);
+        }
       }
-	  
-	  //Now de-allocate temperatures
-	  if (temperatures != NULL) {
-		  delete[] temperatures;
-	  }
-	  
+
+      // Now de-allocate temperatures
+      if (temperatures != NULL) {
+        delete[] temperatures;
+      }
+
       if (verbosityLevel_high) {
         cout << "Process #" << solverProcessIndex << "/" << solverProcessSize - 1
-             << ": Advancing preCICE: ...done setting " << readDataString <<"s for "
+             << ": Advancing preCICE: ...done setting " << readDataString << "s for "
              << config_container[ZONE_0]->GetpreCICE_WetSurfaceMarkerName() << indexMarkerWetMappingLocalToGlobal[i]
              << "." << endl;
       }
@@ -767,33 +755,33 @@ void Precice::saveOldState(bool* StopCalc, double* dt) {
   for (int iPoint = 0; iPoint < nPoint; iPoint++) {
     for (int iVar = 0; iVar < nVar; iVar++) {
       // Save solutions at last and current time step
-      solution_Saved[iPoint][iVar] = (solver_container[ZONE_0][INST_0][MESH_0][FLOW_SOL]->GetNodes()->GetSolution(iPoint, iVar));
+      solution_Saved[iPoint][iVar] =
+          (solver_container[ZONE_0][INST_0][MESH_0][FLOW_SOL]->GetNodes()->GetSolution(iPoint, iVar));
       solution_time_n_Saved[iPoint][iVar] =
           (solver_container[ZONE_0][INST_0][MESH_0][FLOW_SOL]->GetNodes()->GetSolution_time_n(iPoint, iVar));
       solution_time_n1_Saved[iPoint][iVar] =
           (solver_container[ZONE_0][INST_0][MESH_0][FLOW_SOL]->GetNodes()->GetSolution_time_n1(iPoint, iVar));
     }
-	if (readDataType != ReadDataType::Temperature) { //If not doing FSI, no need to save this stuff
-		for (int iDim = 0; iDim < nDim; iDim++) {
-		  // Save coordinates at last, current and next time step
-		  Coord_Saved[iPoint][iDim] = (geometry_container[ZONE_0][INST_0][MESH_0]->nodes->GetCoord(iPoint))[iDim];
-		  Coord_n_Saved[iPoint][iDim] = (geometry_container[ZONE_0][INST_0][MESH_0]->nodes->GetCoord_n(iPoint))[iDim];
-		  Coord_n1_Saved[iPoint][iDim] = (geometry_container[ZONE_0][INST_0][MESH_0]->nodes->GetCoord_n1(iPoint))[iDim];
-		  Coord_p1_Saved[iPoint][iDim] = (geometry_container[ZONE_0][INST_0][MESH_0]->nodes->GetCoord_p1(iPoint))[iDim];
-		  
-		  // Save grid velocity - only important when using continunous adjoint
-		  // Also: SU2 does not instantiate GridVel_Grad in CPoint when not, so this check is critical
-		  if (config_container[ZONE_0]->GetContinuous_Adjoint())
-		  {
-			  GridVel_Saved[iPoint][iDim] = (geometry_container[ZONE_0][INST_0][MESH_0]->nodes->GetGridVel(iPoint))[iDim];
-			  for (int jDim = 0; jDim < nDim; jDim++) {
-				// Save grid velocity gradient
-				GridVel_Grad_Saved[iPoint][iDim][jDim] =
-					geometry_container[ZONE_0][INST_0][MESH_0]->nodes->GetGridVel_Grad(iPoint)[iDim][jDim];
-			  }
-		  }
-		}
-	}
+    if (readDataType != ReadDataType::Temperature) {  // If not doing FSI, no need to save this stuff
+      for (int iDim = 0; iDim < nDim; iDim++) {
+        // Save coordinates at last, current and next time step
+        Coord_Saved[iPoint][iDim] = (geometry_container[ZONE_0][INST_0][MESH_0]->nodes->GetCoord(iPoint))[iDim];
+        Coord_n_Saved[iPoint][iDim] = (geometry_container[ZONE_0][INST_0][MESH_0]->nodes->GetCoord_n(iPoint))[iDim];
+        Coord_n1_Saved[iPoint][iDim] = (geometry_container[ZONE_0][INST_0][MESH_0]->nodes->GetCoord_n1(iPoint))[iDim];
+        Coord_p1_Saved[iPoint][iDim] = (geometry_container[ZONE_0][INST_0][MESH_0]->nodes->GetCoord_p1(iPoint))[iDim];
+
+        // Save grid velocity - only important when using continunous adjoint
+        // Also: SU2 does not instantiate GridVel_Grad in CPoint when not, so this check is critical
+        if (config_container[ZONE_0]->GetContinuous_Adjoint()) {
+          GridVel_Saved[iPoint][iDim] = (geometry_container[ZONE_0][INST_0][MESH_0]->nodes->GetGridVel(iPoint))[iDim];
+          for (int jDim = 0; jDim < nDim; jDim++) {
+            // Save grid velocity gradient
+            GridVel_Grad_Saved[iPoint][iDim][jDim] =
+                geometry_container[ZONE_0][INST_0][MESH_0]->nodes->GetGridVel_Grad(iPoint)[iDim][jDim];
+          }
+        }
+      }
+    }
   }
 
   // Save wether simulation should be stopped after the current iteration
@@ -807,32 +795,32 @@ void Precice::saveOldState(bool* StopCalc, double* dt) {
 void Precice::reloadOldState(bool* StopCalc, double* dt) {
   for (int iPoint = 0; iPoint < nPoint; iPoint++) {
     // Reload solutions at last and current time step
-    solver_container[ZONE_0][INST_0][MESH_0][FLOW_SOL]->GetNodes()->SetSolution(iPoint,solution_Saved[iPoint]);
-    solver_container[ZONE_0][INST_0][MESH_0][FLOW_SOL]->GetNodes()->Set_Solution_time_n(iPoint, solution_time_n_Saved[iPoint]);
-    solver_container[ZONE_0][INST_0][MESH_0][FLOW_SOL]->GetNodes()->Set_Solution_time_n1(iPoint, solution_time_n1_Saved[iPoint]);
+    solver_container[ZONE_0][INST_0][MESH_0][FLOW_SOL]->GetNodes()->SetSolution(iPoint, solution_Saved[iPoint]);
+    solver_container[ZONE_0][INST_0][MESH_0][FLOW_SOL]->GetNodes()->Set_Solution_time_n(iPoint,
+                                                                                        solution_time_n_Saved[iPoint]);
+    solver_container[ZONE_0][INST_0][MESH_0][FLOW_SOL]->GetNodes()->Set_Solution_time_n1(
+        iPoint, solution_time_n1_Saved[iPoint]);
 
+    if (readDataType != ReadDataType::Temperature) {  // If not doing FSI, no need to save this stuff
+      // Reload coordinates at last, current and next time step
+      geometry_container[ZONE_0][INST_0][MESH_0]->nodes->SetCoord_n1(iPoint, Coord_n1_Saved[iPoint]);
+      geometry_container[ZONE_0][INST_0][MESH_0]->nodes->SetCoord_n(iPoint, Coord_n_Saved[iPoint]);
+      geometry_container[ZONE_0][INST_0][MESH_0]->nodes->SetCoord_p1(iPoint, Coord_p1_Saved[iPoint]);
+      geometry_container[ZONE_0][INST_0][MESH_0]->nodes->SetCoord(iPoint, Coord_Saved[iPoint]);
 
-	if (readDataType != ReadDataType::Temperature) { //If not doing FSI, no need to save this stuff
-		// Reload coordinates at last, current and next time step
-		geometry_container[ZONE_0][INST_0][MESH_0]->nodes->SetCoord_n1(iPoint, Coord_n1_Saved[iPoint]);
-		geometry_container[ZONE_0][INST_0][MESH_0]->nodes->SetCoord_n(iPoint, Coord_n_Saved[iPoint]);
-		geometry_container[ZONE_0][INST_0][MESH_0]->nodes->SetCoord_p1(iPoint, Coord_p1_Saved[iPoint]);
-		geometry_container[ZONE_0][INST_0][MESH_0]->nodes->SetCoord(iPoint, Coord_Saved[iPoint]);
-		
-		// Reload grid velocity
-		geometry_container[ZONE_0][INST_0][MESH_0]->nodes->SetGridVel(iPoint, GridVel_Saved[iPoint]);
+      // Reload grid velocity
+      geometry_container[ZONE_0][INST_0][MESH_0]->nodes->SetGridVel(iPoint, GridVel_Saved[iPoint]);
 
-		
-		// Reload grid velocity gradient if using CA
-		if (config_container[ZONE_0]->GetContinuous_Adjoint())
-		{
-			for (int iDim = 0; iDim < nDim; iDim++) {
-			  for (int jDim = 0; jDim < nDim; jDim++) {
-				geometry_container[ZONE_0][INST_0][MESH_0]->nodes->GetGridVel_Grad()[iPoint][iDim][jDim] = GridVel_Grad_Saved[iPoint][iDim][jDim];
-			  }
-			}
-		}
-	}
+      // Reload grid velocity gradient if using CA
+      if (config_container[ZONE_0]->GetContinuous_Adjoint()) {
+        for (int iDim = 0; iDim < nDim; iDim++) {
+          for (int jDim = 0; jDim < nDim; jDim++) {
+            geometry_container[ZONE_0][INST_0][MESH_0]->nodes->GetGridVel_Grad()[iPoint][iDim][jDim] =
+                GridVel_Grad_Saved[iPoint][iDim][jDim];
+          }
+        }
+      }
+    }
   }
 
   // Reload wether simulation should be stopped after current iteration
