@@ -604,7 +604,7 @@ double Precice::advance(double computedTimestepLength) {
 		  solverInterface.writeBlockVectorData(forceID[indexMarkerWetMappingLocalToGlobal[i]], vertexSize[i], vertexIDs[i],
 											   forces);
 	  } else {
-		  solverInterface.writeBlockVectorData(heatFluxID[indexMarkerWetMappingLocalToGlobal[i]], vertexSize[i], vertexIDs[i],
+		  solverInterface.writeBlockScalarData(heatFluxID[indexMarkerWetMappingLocalToGlobal[i]], vertexSize[i], vertexIDs[i],
 											   heatFluxes);
 
       }	  
