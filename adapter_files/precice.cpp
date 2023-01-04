@@ -210,6 +210,7 @@ double Precice::initialize() {
     forceID = new int[globalNumberWetSurfaces];
     displDeltaID = new int[globalNumberWetSurfaces];
     tempID = new int[globalNumberWetSurfaces];
+    heatFluxID = new int[globalNumberWetSurfaces];
     for (int i = 0; i < globalNumberWetSurfaces; i++) {
       // Get preCICE meshIDs
       meshID[i] = solverInterface.getMeshID(preciceMeshName + (i == 0 ? "" : to_string(i)));
