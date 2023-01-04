@@ -52,12 +52,20 @@
     "Simulation": {
       "in_data": "PlateInit", // Read in data that was initialized
       "out_data": "PlateSolution", // Write out data using name PlateSolution
-	  "precice_solver_name": "Solid",
-	  "precice_config": "../precice-config.xml",
-      "end_time": 1.0, // Simulate to 1
-      "time_step": 0.01, //
-      "output_vis": true, // Write visualization files for later viewing in Paraview
-      "vis_steps": 20 // Write out vis files and checkpoint files every 20 time steps
+	    "precice_solver_name": "Solid",
+      "precice_config": "../precice-config.xml",
+      "ProgressionTracker": {
+        "end_time": 1.0, // Simulate to 1
+        "TimeStepControl": {
+          "type": "constant",
+          "time_step": 0.01
+        }
+      }
+
+    },
+    "Visualization" : {
+      "output_format": "paraview",
+      "frequency": 0.2
     },
     "FiniteElementDefinition": {
       "order": 1 // Use linear (p = 1) elements
