@@ -60,12 +60,13 @@ Precice::Precice(const string& preciceConfigurationFileName, const std::string& 
       solution_Saved(NULL),
       solution_time_n_Saved(NULL),
       solution_time_n1_Saved(NULL) {
-  if (preciceReadDataName.find("Delta") == std::string::npos)
-    readDataType = ReadDataType::Displacement;
-  else if (preciceReadDataName.find("Temperature") == std::string::npos)
-    readDataType = ReadDataType::DisplacementDelta;
+  if (preciceReadDataName.find("Temperature") == std::string::npos)
+    if (preciceReadDataName.find("Delta") == std::string::npos)
+      readDataType = ReadDataType::Displacement;
+    else
+      readDataType = ReadDataType::DisplacementDelta;
   else
-	readDataType = ReadDataType::Temperature;
+	  readDataType = ReadDataType::Temperature;
 
   Coord_Saved = new double*[nPoint];
   Coord_n_Saved = new double*[nPoint];
