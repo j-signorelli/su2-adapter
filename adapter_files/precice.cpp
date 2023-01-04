@@ -60,14 +60,12 @@ Precice::Precice(const string& preciceConfigurationFileName, const std::string& 
       solution_Saved(NULL),
       solution_time_n_Saved(NULL),
       solution_time_n1_Saved(NULL) {
-  if (preciceReadDataName.find("Delta") != std::string::npos)
-    readDataType = ReadDataType::DisplacementDelta;
-  else if (preciceReadDataName.find("Displacement") != std::string::npos
+  if (preciceReadDataName.find("Delta") == std::string::npos)
     readDataType = ReadDataType::Displacement;
-  else if (preciceReadDataName.find("Temperature") != std::string::npos)
-    readDataType = ReadDataType::Temperature;
+  else if (preciceReadDataName.find("Temperature") == std::string::npos)
+    readDataType = ReadDataType::DisplacementDelta;
   else
-	readDataType = ReadDataType::HeatFlux;
+	readDataType = ReadDataType::Temperature;
 
   Coord_Saved = new double*[nPoint];
   Coord_n_Saved = new double*[nPoint];
@@ -290,8 +288,8 @@ double Precice::initialize() {
 
       solverInterface.setMeshVertices(meshID[indexMarkerWetMappingLocalToGlobal[i]], vertexSize[i], coords,
                                       vertexIDs[i]);
-	  // If doing FSI:
-	  if (readDataType == ReadDataType::DisplacementDelta or readDataType == ReadDataType::Displacement) {
+									  
+	  if (readDataType != ReadDataType::Temperature) {
 		  forceID[indexMarkerWetMappingLocalToGlobal[i]] = solverInterface.getDataID(
 			  preciceWriteDataName +
 				  (indexMarkerWetMappingLocalToGlobal[i] == 0 ? "" : to_string(indexMarkerWetMappingLocalToGlobal[i])),
@@ -312,7 +310,7 @@ double Precice::initialize() {
 		  }
 		  
 		  
-      } else if (readDataType == ReadDataType::Temperature) { 
+      } else { // Else get CHT data IDs
 		heatFluxID[indexMarkerWetMappingLocalToGlobal[i]] = solverInterface.getDataID(
 			  preciceWriteDataName +
 				  (indexMarkerWetMappingLocalToGlobal[i] == 0 ? "" : to_string(indexMarkerWetMappingLocalToGlobal[i])),
@@ -322,19 +320,10 @@ double Precice::initialize() {
 			  preciceReadDataName +
 				  (indexMarkerWetMappingLocalToGlobal[i] == 0 ? "" : to_string(indexMarkerWetMappingLocalToGlobal[i])),
 			  meshID[indexMarkerWetMappingLocalToGlobal[i]]);
-	  } else { // Else readDataType must be heat flux
-	    tempID[indexMarkerWetMappingLocalToGlobal[i]] = solverInterface.getDataID(
-			  preciceWriteDataName +
-				  (indexMarkerWetMappingLocalToGlobal[i] == 0 ? "" : to_string(indexMarkerWetMappingLocalToGlobal[i])),
-			  meshID[indexMarkerWetMappingLocalToGlobal[i]]);
 			  
-		heatFluxID[indexMarkerWetMappingLocalToGlobal[i]] = solverInterface.getDataID(
-			  preciceReadDataName +
-				  (indexMarkerWetMappingLocalToGlobal[i] == 0 ? "" : to_string(indexMarkerWetMappingLocalToGlobal[i])),
-			  meshID[indexMarkerWetMappingLocalToGlobal[i]]);
-	  
 	  
 	  }
+		  
     }
     for (int i = 0; i < globalNumberWetSurfaces; i++) {
       bool flag = false;
@@ -345,36 +334,29 @@ double Precice::initialize() {
       }
       if (!flag) {
         solverInterface.setMeshVertices(meshID[i], 0, NULL, NULL);
-		if (readDataType == ReadDataType::DisplacementDelta or readDataType == ReadDataType::Displacement) {
+		if (readDataType != ReadDataType::Temperature) {
 			forceID[i] = solverInterface.getDataID(preciceWriteDataName + (i == 0 ? "" : to_string(i)), meshID[i]);
 			displDeltaID[i] = solverInterface.getDataID(preciceReadDataName + (i == 0 ? "" : to_string(i)), meshID[i]);
-		} else if (readDataType == ReadDataType::Temperature) {
+		} else {
 			heatFluxID[i] = solverInterface.getDataID(preciceWriteDataName + (i == 0 ? "" : to_string(i)), meshID[i]);
 			tempID[i] = solverInterface.getDataID(preciceReadDataName + (i == 0 ? "" : to_string(i)), meshID[i]);
-		}
-		else { // Else readDataType must be heat flux
-			heatFluxID[i] = solverInterface.getDataID(preciceReadDataName + (i == 0 ? "" : to_string(i)), meshID[i]);
-			tempID[i] = solverInterface.getDataID(preciceWriteDataName + (i == 0 ? "" : to_string(i)), meshID[i]);
 		}
 	  }
     }
   } else {
     for (int i = 0; i < globalNumberWetSurfaces; i++) {
       solverInterface.setMeshVertices(meshID[i], 0, NULL, NULL);
-      if (readDataType == ReadDataType::DisplacementDelta or readDataType == ReadDataType::Displacement) {
+      if (readDataType != ReadDataType::Temperature) {
 			forceID[i] = solverInterface.getDataID(preciceWriteDataName + (i == 0 ? "" : to_string(i)), meshID[i]);
 			displDeltaID[i] = solverInterface.getDataID(preciceReadDataName + (i == 0 ? "" : to_string(i)), meshID[i]);
-	  } else if (readDataType == ReadDataType::Temperature) {
+	  } else {
 		    heatFluxID[i] = solverInterface.getDataID(preciceWriteDataName + (i == 0 ? "" : to_string(i)), meshID[i]);
 			tempID[i] = solverInterface.getDataID(preciceReadDataName + (i == 0 ? "" : to_string(i)), meshID[i]);
-	  } else {
-		    heatFluxID[i] = solverInterface.getDataID(preciceReadDataName + (i == 0 ? "" : to_string(i)), meshID[i]);
-			tempID[i] = solverInterface.getDataID(preciceWriteDataName + (i == 0 ? "" : to_string(i)), meshID[i]);
 	  }
 	}
   }
 
-  if (verbosityLevel_high and (readDataType != ReadDataType::Temperature or readDataType != ReadDataType::HeatFlux) {
+  if (verbosityLevel_high and readDataType != ReadDataType::Temperature) {
     cout << "Process #" << solverProcessIndex << "/" << solverProcessSize - 1
          << ": There is grid movement (expected: 1): " << config_container[ZONE_0]->GetGrid_Movement()
          << endl; /*--- for debugging purposes ---*/
@@ -411,7 +393,7 @@ double Precice::advance(double computedTimestepLength) {
 	
 	bool incompressible = false;
 	bool viscous_flow = false;
-	if (readDataType == ReadDataType::DisplacementDelta or readDataType == ReadDataType::Displacement) {
+	if (readDataType != ReadDataType::Temperature) {
 		// Get physical simulation information
 		incompressible = (config_container[ZONE_0]->GetKind_Regime() == ENUM_REGIME::INCOMPRESSIBLE);
 		viscous_flow = ((config_container[ZONE_0]->GetKind_Solver() == MAIN_SOLVER::NAVIER_STOKES) ||
@@ -551,7 +533,7 @@ double Precice::advance(double computedTimestepLength) {
 			}
 		  }
 		  
-	  } else if (readDataType == ReadDataType::Temperature) { // Else we are doing CHT with read data temperature
+	  } else { // Else we are doing CHT!
 
 		  // Get heat flux from solver container
 		  // As from CFlowOutput::LoadSurfaceData, ensure correct retrieval of HeatFlux
@@ -582,7 +564,7 @@ double Precice::advance(double computedTimestepLength) {
 				 << config_container[ZONE_0]->GetpreCICE_WetSurfaceMarkerName() << indexMarkerWetMappingLocalToGlobal[i]
 				 << endl;
 	       }
-	  } else {
+	  }
 	  
 	   if (verbosityLevel_high) {
 		cout << "Process #" << solverProcessIndex << "/" << solverProcessSize - 1
