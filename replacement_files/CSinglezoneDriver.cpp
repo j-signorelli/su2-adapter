@@ -53,7 +53,7 @@ void CSinglezoneDriver::StartSolver() {
         config_container[ZONE_0]->GetpreCICE_ReadDataName(), config_container[ZONE_0]->GetpreCICE_WriteDataName(),
         config_container[ZONE_0]->GetpreCICE_MeshName(), rank, size, geometry_container, solver_container,
         config_container, grid_movement);
-    dt = new double(config_container[ZONE_0]->GetDelta_UnstTimeND());
+    dt = new double(config_container[ZONE_0]->GetDelta_UnstTime());//dimensional
     max_precice_dt = new double(precice->initialize());
 
     /* Implemented continuous adjoint check in precice class instead
@@ -97,7 +97,7 @@ void CSinglezoneDriver::StartSolver() {
     // preCICE - set minimal time step size as new time step size in SU2
     if (precice_usage) {
       dt = min(max_precice_dt, dt);
-      config_container[ZONE_0]->SetDelta_UnstTimeND(*dt);
+      config_container[ZONE_0]->SetDelta_UnstTimeND((*dt)*config_container[ZONE_0]->GetTime_Ref());
     }
 
     /*--- Perform some preprocessing before starting the time-step simulation. ---*/
