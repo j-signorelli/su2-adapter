@@ -549,7 +549,7 @@ double Precice::advance(double computedTimestepLength) {
           if (geometry_container[ZONE_0][INST_0][MESH_0]->nodes->GetColor(nodeVertex[iVertex]) == solverProcessIndex) {
             heatFluxes[iVertex] =
                 factor * solver_container[ZONE_0][INST_0][MESH_0][heat_sol]->GetHeatFlux(valueMarkerWet[i], iVertex);
-
+            cout << "Heat Flux:" << heatFluxes[iVertex];
           } else {
             heatFluxes[iVertex] = 0;
           }
@@ -703,8 +703,9 @@ double Precice::advance(double computedTimestepLength) {
           geometry_container[ZONE_0][INST_0][MESH_0]->vertex[valueMarkerWet[i]][iVertex]->SetVarCoord(
               displacementDeltas_su2[iVertex]);
         } else {  // Else we are doing CHT
+          cout << temperatures[iVertex] << endl;
           geometry_container[ZONE_0][INST_0][MESH_0]->SetCustomBoundaryTemperature(valueMarkerWet[i], iVertex, temperatures[iVertex]);
-          geometry_container[ZONE_0][INST_0][MESH_0]->UpdateCustomBoundaryConditions(geometry_container[ZONE_0][INST_0], config_container[ZONE_0]);
+          //geometry_container[ZONE_0][INST_0][MESH_0]->UpdateCustomBoundaryConditions(geometry_container[ZONE_0][INST_0], config_container[ZONE_0]);
           
         }
       }
