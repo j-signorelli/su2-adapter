@@ -97,7 +97,7 @@ void CSinglezoneDriver::StartSolver() {
     // preCICE - set minimal time step size as new time step size in SU2
     if (precice_usage) {
       dt = min(max_precice_dt, dt);
-      config_container[ZONE_0]->SetDelta_UnstTimeND((*dt)*config_container[ZONE_0]->GetTime_Ref());
+      config_container[ZONE_0]->SetDelta_UnstTimeND((*dt)/config_container[ZONE_0]->GetTime_Ref());
     }
 
     /*--- Perform some preprocessing before starting the time-step simulation. ---*/
