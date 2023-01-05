@@ -704,9 +704,15 @@ double Precice::advance(double computedTimestepLength) {
               displacementDeltas_su2[iVertex]);
         } else {  // Else we are doing CHT
           cout << temperatures[iVertex] << endl;
+
+          // Method done in PyWrapper: First Set, then Update as per below.
+          // See SU2_CFD/src/python_wrapper_structure.cpp and the py_wrapper CHT example
+          cout << "Printing pre-update vertex temperatures..." << endl;
+          unsigned long iPoint = geometry_container[ZONE_0][INST_0][MESH_0]->vertex[valueMarkerWet[i]][iVertex]->GetNode();
+          cout << "Point " << iPoint << ": " << solver_container[ZONE_0][INST_0][MESH_0][FLOW_SOL]->GetNodes()->GetTemperature(iPoint) << endl;
+
           geometry_container[ZONE_0][INST_0][MESH_0]->SetCustomBoundaryTemperature(valueMarkerWet[i], iVertex, temperatures[iVertex]);
-          //geometry_container[ZONE_0][INST_0][MESH_0]->UpdateCustomBoundaryConditions(geometry_container[ZONE_0][INST_0], config_container[ZONE_0]);
-          
+          geometry_container[ZONE_0][INST_0][MESH_0]->UpdateCustomBoundaryConditions(geometry_container[ZONE_0][INST_0], config_container[ZONE_0]);
         }
       }
 
