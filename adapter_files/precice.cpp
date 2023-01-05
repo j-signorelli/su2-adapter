@@ -704,7 +704,7 @@ double Precice::advance(double computedTimestepLength) {
               displacementDeltas_su2[iVertex]);
         } else {  // Else we are doing CHT
           geometry_container[ZONE_0][INST_0][MESH_0]->SetCustomBoundaryTemperature(valueMarkerWet[i], iVertex, temperatures[iVertex]);
-          geometry_container[ZONE_0][INST_0][MESH_0]->UpdateCustomBoundaryConditions(geometry_container[ZONE_0][INST_0][MESH_0], config_container[ZONE_0]);
+          geometry_container[ZONE_0][INST_0][MESH_0]->UpdateCustomBoundaryConditions(geometry_container[ZONE_0][INST_0], config_container[ZONE_0]);
           
         }
       }
