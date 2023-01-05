@@ -67,6 +67,11 @@
       "output_format": "paraview",
       "frequency": 0.2
     },
+    "Checkpoint": {
+      "output_name": "PlateSolution_Checkpoint",
+      "frequency": 0.2
+
+    }
     "FiniteElementDefinition": {
       "order": 1 // Use linear (p = 1) elements
     },
