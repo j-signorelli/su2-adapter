@@ -549,7 +549,7 @@ double Precice::advance(double computedTimestepLength) {
           if (geometry_container[ZONE_0][INST_0][MESH_0]->nodes->GetColor(nodeVertex[iVertex]) == solverProcessIndex) {
             heatFluxes[iVertex] =
                 factor * solver_container[ZONE_0][INST_0][MESH_0][heat_sol]->GetHeatFlux(valueMarkerWet[i], iVertex);
-            cout << "Heat flux retrieved for vertex " << iVertex << ": " << heatFluxes[iVertex];
+            cout << "Heat flux retrieved for vertex " << iVertex << ": " << heatFluxes[iVertex] << endl;
           } else {
             heatFluxes[iVertex] = 0;
           }
