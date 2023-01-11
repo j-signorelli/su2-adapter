@@ -549,7 +549,7 @@ double Precice::advance(double computedTimestepLength) {
           if (geometry_container[ZONE_0][INST_0][MESH_0]->nodes->GetColor(nodeVertex[iVertex]) == solverProcessIndex) {
             heatFluxes[iVertex] =
                 factor * solver_container[ZONE_0][INST_0][MESH_0][heat_sol]->GetHeatFlux(valueMarkerWet[i], iVertex);
-            cout << "Heat Flux:" << heatFluxes[iVertex];
+            cout << "Heat flux retrieved for vertex " << iVertex << ": " << heatFluxes[iVertex];
           } else {
             heatFluxes[iVertex] = 0;
           }
@@ -703,24 +703,23 @@ double Precice::advance(double computedTimestepLength) {
           geometry_container[ZONE_0][INST_0][MESH_0]->vertex[valueMarkerWet[i]][iVertex]->SetVarCoord(
               displacementDeltas_su2[iVertex]);
         } else {  // Else we are doing CHT
-          cout << temperatures[iVertex] << endl;
-
+          cout << "Temperature from preCICE for vertex " << iVertex << ": " << temperatures[iVertex] << endl;
+          cout << "Pre-update vertex temperature" << iVertex << ": " << geometry_container[ZONE_0][INST_0][MESH_0]->GetCustomBoundaryTemperature(valueMarkerWet[i],iVertex) << endl << endl;
           // Method done in PyWrapper: First Set, then Update as per below.
           // See SU2_CFD/src/python_wrapper_structure.cpp and the py_wrapper CHT example
           //cout << "Printing pre-update vertex temperatures..." << endl;
           unsigned long iPoint = geometry_container[ZONE_0][INST_0][MESH_0]->vertex[valueMarkerWet[i]][iVertex]->GetNode();
-          //cout << "Point " << iPoint << ": " << solver_container[ZONE_0][INST_0][MESH_0][FLOW_SOL]->GetNodes()->GetTemperature(iPoint) << endl;
 
           geometry_container[ZONE_0][INST_0][MESH_0]->SetCustomBoundaryTemperature(valueMarkerWet[i], iVertex, temperatures[iVertex]);
           geometry_container[ZONE_0][INST_0][MESH_0]->UpdateCustomBoundaryConditions(geometry_container[ZONE_0][INST_0], config_container[ZONE_0]);
           
         // As from CFlowOutput::LoadSurfaceData, ensure correct retrieval of HeatFlux
-        const auto heat_sol = (config_container[ZONE_0]->GetKind_Regime() == ENUM_REGIME::INCOMPRESSIBLE) &&
+        /*const auto heat_sol = (config_container[ZONE_0]->GetKind_Regime() == ENUM_REGIME::INCOMPRESSIBLE) &&
                                       config_container[ZONE_0]->GetWeakly_Coupled_Heat()
                                   ? HEAT_SOL
                                   : FLOW_SOL;
-          
-          solver_container[ZONE_0][INST_0][MESH_0][heat_sol]->UpdateCustomBoundaryConditions(geometry_container[ZONE_0][INST_0], config_container[ZONE_0]);
+          */
+          //solver_container[ZONE_0][INST_0][MESH_0][heat_sol]->UpdateCustomBoundaryConditions(geometry_container[ZONE_0][INST_0], config_container[ZONE_0]);
         }
       }
 
