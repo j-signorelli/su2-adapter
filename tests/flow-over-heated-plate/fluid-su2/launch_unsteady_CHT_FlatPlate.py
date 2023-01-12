@@ -72,7 +72,7 @@ def main():
 
 
   CHTMarkerID = None
-  CHTMarker = 'plate'       # Specified by the user
+  CHTMarker = 'wetSurface'       # Specified by the user
 
   # Get all the tags with the CHT option
   CHTMarkerList =  SU2Driver.GetAllCHTMarkersTag()
@@ -111,7 +111,9 @@ def main():
     # Time iteration preprocessing
     SU2Driver.Preprocess(TimeIter)
     # Define the homogeneous unsteady wall temperature on the structure (user defined)
-    WallTemp = 293.0 + 57.0*sin(2*pi*time)
+    WallTemp = 300
+    if TimeIter > 0:
+      WallTemp = 310
     # Set this temperature to all the vertices on the specified CHT marker
     for iVertex in range(nVertex_CHTMarker):
       SU2Driver.SetVertexTemperature(CHTMarkerID, iVertex, WallTemp)
