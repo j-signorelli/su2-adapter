@@ -241,7 +241,7 @@ void CSinglezoneDriver::Output(unsigned long TimeIter, bool suppress_output_by_p
   bool wrote_files = false;
   // preCICE: Output solution only, if preCICE converged; otherwise suppress output
   cout << precice_usage << endl;
-  cout << !precice_usage || (precice_usage && !suppress_output_by_preCICE) << endl;
+  cout << (!precice_usage || (precice_usage && !suppress_output_by_preCICE)) << endl;
   if (!precice_usage || (precice_usage && !suppress_output_by_preCICE)) {
     cout << "In if statement" << endl;
     wrote_files = output_container[ZONE_0]->SetResult_Files(geometry_container[ZONE_0][INST_0][MESH_0],
