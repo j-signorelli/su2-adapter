@@ -412,6 +412,7 @@ double Precice::advance(double computedTimestepLength) {
     } else {  // Else doing CHT - get factor for redimensionalizing heat flux
 
       factor = config_container[ZONE_0]->GetHeat_Flux_Ref();
+      cout << "Heat Flux factor: " << factor << endl;
     }
 
     if (verbosityLevel_high) {
