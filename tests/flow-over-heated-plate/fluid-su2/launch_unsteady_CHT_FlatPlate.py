@@ -33,7 +33,7 @@ import sys
 from optparse import OptionParser	# use a parser for configuration
 import pysu2			            # imports the SU2 wrapped module
 from math import *
-import pdb
+
 # -------------------------------------------------------------------
 #  Main
 # -------------------------------------------------------------------
@@ -127,7 +127,6 @@ def main():
     SU2Driver.Update()
     # Monitor the solver and output solution to file if required
     stopCalc = SU2Driver.Monitor(TimeIter)
-    pdb.set_trace()
     SU2Driver.Output(TimeIter)
     if (stopCalc == True):
       break
