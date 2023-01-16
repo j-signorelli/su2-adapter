@@ -713,14 +713,6 @@ double Precice::advance(double computedTimestepLength) {
 
           geometry_container[ZONE_0][INST_0][MESH_0]->SetCustomBoundaryTemperature(valueMarkerWet[i], iVertex, temperatures[iVertex]);
           geometry_container[ZONE_0][INST_0][MESH_0]->UpdateCustomBoundaryConditions(geometry_container[ZONE_0][INST_0], config_container[ZONE_0]);
-          
-        // As from CFlowOutput::LoadSurfaceData, ensure correct retrieval of HeatFlux
-        /*const auto heat_sol = (config_container[ZONE_0]->GetKind_Regime() == ENUM_REGIME::INCOMPRESSIBLE) &&
-                                      config_container[ZONE_0]->GetWeakly_Coupled_Heat()
-                                  ? HEAT_SOL
-                                  : FLOW_SOL;
-          */
-          //solver_container[ZONE_0][INST_0][MESH_0][heat_sol]->UpdateCustomBoundaryConditions(geometry_container[ZONE_0][INST_0], config_container[ZONE_0]);
         }
       }
 
