@@ -235,7 +235,11 @@ def main():
     
     # Monitor the solver
     stopCalc = SU2Driver.Monitor(TimeIter)
-    
+
+    # Update control parameters
+    TimeIter += 1
+    time += deltaT
+
     # Loop over the vertices
     for i, iVertex in enumerate(iVertices_CHTMarker_PHYS):
       # Get heat fluxes at each vertex
@@ -253,14 +257,11 @@ def main():
       SU2Driver.ReloadOldState()
       time = precice_saved_time
       TimeIter = precice_saved_iter
-    else: # Output and increment as usual
+
+    if (participant.is_time_window_complete()):
       SU2Driver.Output(TimeIter)
       if (stopCalc == True):
         break
-      # Update control parameters
-      TimeIter += 1
-      time += deltaT
-
 
     if options.with_MPI == True:
       comm.Barrier()
