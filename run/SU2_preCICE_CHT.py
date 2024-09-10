@@ -37,10 +37,10 @@ def main():
 	parser.add_option("-c", "--precice-config", dest="precice_config", help="Specify preCICE config file", default="../precice-config.xml")
 	parser.add_option("-m", "--precice-mesh", dest="precice_mesh", help="Specify the preCICE mesh name", default="Fluid-Mesh")
 	parser.add_option("-r", "--precice-reverse", action="store_true", dest="precice_reverse", help="Include flag to have SU2 write temperature, read heat flux", default=False)
-	
+
 	# Dimension
 	parser.add_option("-d", "--dimension", dest="nDim", help="Dimension of fluid domain (2D/3D)", type="int", default=2)
-	
+
 	(options, args) = parser.parse_args()
 	options.nZone = int(1) # Specify number of zones here (1)
 
@@ -72,7 +72,7 @@ def main():
 	except:
 		print("There was an error configuring preCICE")
 		return
-	
+
 	mesh_name = options.precice_mesh
 
 	# Check preCICE + SU2 dimensions
@@ -92,7 +92,7 @@ def main():
 	#Check if the specified marker has a CHT option and if it exists on this rank.
 	if CHTMarker in CHTMarkerList and CHTMarker in allMarkerIDs.keys():
 		CHTMarkerID = allMarkerIDs[CHTMarker] # So: if CHTMarkerID != None, then it exists on this rank
-	
+
 	# Number of vertices on the specified marker (per rank)
 	nVertex_CHTMarker = 0         #total number of vertices (physical + halo) on this rank
 	nVertex_CHTMarker_HALO = 0    #number of halo vertices
@@ -186,7 +186,7 @@ def main():
 		precice_deltaT = participant.get_max_time_step_size()
 
 		# Retrieve data from preCICE
-		read_data = participant.read_data(mesh_name, precice_read, vertex_ids, deltaT) 
+		read_data = participant.read_data(mesh_name, precice_read, vertex_ids, deltaT)
 
 		# Set the updated values
 		for i, iVertex in enumerate(iVertices_CHTMarker_PHYS):
@@ -214,15 +214,15 @@ def main():
 
 		# Update the solver for the next time iteration
 		SU2Driver.Update()
-		
+
 		# Monitor the solver
 		stopCalc = SU2Driver.Monitor(TimeIter)
-		
+
 		# Loop over the vertices
 		for i, iVertex in enumerate(iVertices_CHTMarker_PHYS):
 			# Get heat fluxes at each vertex
 			write_data[i] = GetFxn(CHTMarkerID, iVertex)
-			
+
 		# Write data to preCICE
 		participant.write_data(mesh_name, precice_write, vertex_ids, write_data)
 
@@ -240,18 +240,18 @@ def main():
 			SU2Driver.Output(TimeIter)
 			if (stopCalc == True):
 				break
-			# Update control parameters
-            TimeIter += 1
-            time += deltaT
-
+			
+			TimeIter += 1
+			time += deltaT
+			
 		if options.with_MPI == True:
 			comm.Barrier()
-		
+
 	# Postprocess the solver and exit cleanly
 	SU2Driver.Postprocessing()
-	
+
 	participant.finalize()
-	
+
 	if SU2Driver != None:
 		del SU2Driver
 
