@@ -148,6 +148,7 @@ def main():
 	TimeIter = SU2Driver.GetTime_Iter()
 	nTimeIter = SU2Driver.GetnTimeIter()
 	time = TimeIter*deltaT
+	
 
 	# Set up initial data for preCICE
 	if (participant.requires_initial_data()):
@@ -192,7 +193,7 @@ def main():
 		for i, iVertex in enumerate(iVertices_CHTMarker_PHYS):
 			SetFxn(CHTMarkerID, iVertex, read_data[i])
 
-		# Tell the SU2 drive to update the boundary conditions
+		# Tell the SU2 driver to update the boundary conditions
 		SU2Driver.BoundaryConditionsUpdate()
 
 		if options.with_MPI == True:
@@ -202,7 +203,7 @@ def main():
 		deltaT = SU2Driver.GetUnsteady_TimeStep()
 		deltaT = min(precice_deltaT, deltaT)
 		SU2Driver.SetUnsteady_TimeStep(deltaT)
-
+		
 		# Time iteration preprocessing
 		SU2Driver.Preprocess(TimeIter)
 
